@@ -1,12 +1,10 @@
 // Login.js
 
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import axios from 'axios';
-import logo from '../bg-logo.png'; // Certifique-se de que o caminho está correto
-
+import logo from '../bg-logo.png';
 const API_URL = process.env.REACT_APP_API_URL
 axios.defaults.xsrfCookieName = 'csrftoken';
-axios.defaults.withXSRFToken = true
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
 axios.defaults.withCredentials = true;
 
@@ -16,17 +14,32 @@ const Login = ({setAuthenticated, setSessionId}) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    const [csrfToken, setCsrfToken] = useState('');
+
+    useEffect(() => {
+        // Obter o CSRF token ao montar o componente
+        login.get('get-csrf-token/', {withCredentials: true})
+            .then(response => {
+                const token = response.data.csrfToken;
+                setCsrfToken(token)
+            })
+            .catch(error => {
+                console.error('Erro ao obter CSRF token:', error);
+            });
+    }, []);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
+            console.log("CSRF Token:", csrfToken);
             const responseData = await login.post('login/', {
                     username: username,
                     password: password
                 },
                 {
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken // Enviar o token CSRF no header
                     }
                 }
             );
