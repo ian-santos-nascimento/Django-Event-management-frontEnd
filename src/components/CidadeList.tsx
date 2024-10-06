@@ -1,21 +1,15 @@
 import {useEffect, useState} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import axios from 'axios';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import {fetchData,} from '../ApiCall/ApiCall.jsx'
+import {fetchData, putData, postData, deleteData,} from '../ApiCall/ApiCall.jsx'
 import {ESTADOS_BRASILEIROS} from '../util/OptionList'
-import csrfToken from "../ApiCall/CsrfToken"
 import {InputGroup} from "react-bootstrap";
 import {faSearch, faTimes} from "@fortawesome/free-solid-svg-icons";
 
-const API_URL = process.env.REACT_APP_API_URL;
-axios.defaults.xsrfCookieName = 'csrftoken';
-axios.defaults.xsrfHeaderName = 'X-CSRFToken';
-axios.defaults.withCredentials = true;
 
 interface Cidade {
     id_cidade: number
@@ -37,7 +31,7 @@ export default function CidadeList({sessionId}) {
 
     useEffect(() => {
         const fetchCidades = async () => {
-            const response = await fetchData('cidades', currentPage, searchQuery, csrfToken, sessionId);
+            const response = await fetchData('cidades', currentPage, searchQuery);
             const cidades = response.data as Cidade[];
             setCidades(cidades);
             setTotalPages(Math.ceil(response.count / 10));
@@ -71,28 +65,23 @@ export default function CidadeList({sessionId}) {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        try {
-            if (selectedCidade.id_cidade !== null) {
-                await axios.put(`${API_URL}cidades/${selectedCidade.id_cidade}/`, selectedCidade, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    withCredentials: true,
-                });
-                alert('Cidade updated successfully!');
-            } else {
-                await axios.post(`${API_URL}cidades/`, selectedCidade, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    withCredentials: true,
-                });
-                alert('Cidade created successfully!');
-            }
+        var success = false;
+        if (selectedCidade.id_cidade !== null) {
+            success = await putData('cidades', selectedCidade.id_cidade, selectedCidade).then(response => {
+                return response.success
+            })
+            alert('Cidade updated successfully!');
+        } else {
+            success = await postData('cidades', selectedCidade).then(response => {
+                return response.success
+            })
+            alert('Cidade created successfully!');
+        }
+        if (success) {
+            selectedCidade.id_cidade !== null ? alert("Criação de Cidade realizada com sucesso") : alert("Edição da cidade realizada com sucesso!")
             window.location.reload()
-        } catch (error) {
-            console.error('Error updating Cidade:', error);
-            alert('Failed to update cidade.');
+        } else {
+            alert("Houve um erro ao salvar a cidade! Verifique os campos e entre em contato com o suporte!")
         }
 
     }
@@ -103,23 +92,17 @@ export default function CidadeList({sessionId}) {
     };
 
     const handleExcluirCidade = async () => {
-        try {
-            await axios.delete(`${API_URL}cidades/${selectedCidade.id_cidade}/`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                withCredentials: true,
-            });
-            alert(`Cidade ${selectedCidade.nome} excluída com sucesso.`);
+        var success = await deleteData('cidades', selectedCidade.id_cidade).then(response => {
+            return response.success
+        })
+        if (success) {
+            alert("Remoção da cidade realizada com sucesso")
             window.location.reload()
-        } catch (error) {
-            console.error('Error updating local:', error);
-            alert('Failed to update local.');
+        } else {
+            alert("Houve um erro ao excluir a cidade! Verifique os campos e entre em contato com o suporte!")
         }
-        handleCloseModal()
-
     }
-   const handleSearchChange = (event) => {
+    const handleSearchChange = (event) => {
         setSearchTerm(event.target.value);
     };
 
@@ -127,7 +110,7 @@ export default function CidadeList({sessionId}) {
         setSearchQuery(searchTerm);
     };
 
-    const handleClearSearch = () =>{
+    const handleClearSearch = () => {
         setSearchQuery('')
         setSearchTerm('')
 

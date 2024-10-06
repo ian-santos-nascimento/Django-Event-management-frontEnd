@@ -1,22 +1,16 @@
 import {useEffect, useState} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import axios from 'axios';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import csrfToken from "../ApiCall/CsrfToken";
-
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import {fetchData,} from '../ApiCall/ApiCall.jsx'
+import {NumericFormat} from 'react-number-format';
+import {deleteData, fetchData, putData, postData,} from '../ApiCall/ApiCall.jsx'
 import {InputGroup} from "react-bootstrap";
 import {faSearch, faTimes} from "@fortawesome/free-solid-svg-icons";
 import {TIPO_COMIDA, SUBCATEGORIAS_COMIDA} from "../util/OptionList"
 
-const API_URL = process.env.REACT_APP_API_URL;
-axios.defaults.xsrfCookieName = 'csrftoken';
-axios.defaults.xsrfHeaderName = 'X-CSRFToken';
-axios.defaults.withCredentials = true;
 
 interface Comida {
     comida_id: number
@@ -29,7 +23,7 @@ interface Comida {
 }
 
 
-export default function CidadeList({sessionId}) {
+export default function CidadeList({csrfToken, sessionId}) {
     const [comidas, setCidades] = useState<Comida[]>([]);
     const [selectedComida, setSelectedComida] = useState<Comida | null>(null);
     const [showModal, setShowModal] = useState(false);
@@ -39,10 +33,12 @@ export default function CidadeList({sessionId}) {
     const [searchQuery, setSearchQuery] = useState('');
     const filteredSubcategories = SUBCATEGORIAS_COMIDA[selectedComida?.tipo] || [];
 
+    const PATH_COMIDAS = 'comidas'
+
 
     useEffect(() => {
         const fetchCardapio = async () => {
-            const response = await fetchData('comidas', currentPage, searchQuery, csrfToken, sessionId)
+            const response = await fetchData(PATH_COMIDAS, currentPage, searchQuery)
             const comidas = response.data as Comida[];
             setCidades(comidas);
             setTotalPages(Math.ceil(response.count / 10));
@@ -79,28 +75,20 @@ export default function CidadeList({sessionId}) {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        try {
-            if (selectedComida.comida_id !== null) {
-                await axios.put(`${API_URL}comidas/${selectedComida.comida_id}/`, selectedComida, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    withCredentials: true,
-                });
-                alert('Comida updated successfully!');
-            } else {
-                await axios.post(`${API_URL}comidas/`, selectedComida, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    withCredentials: true,
-                });
-                alert('Comida created successfully!');
-            }
+        var success = false
+        if (selectedComida.comida_id !== null) {
+            success = await putData(PATH_COMIDAS, selectedComida, selectedComida.comida_id).then(response => {
+                return response.success
+            })
+        } else {
+            success = await postData(PATH_COMIDAS, selectedComida).then(response => {
+                return response.success
+            })
+        }
+        if (success) {
+            selectedComida.comida_id !== null ? alert("Comida atualizada com sucesso")
+                : alert("Comida criada com sucesso")
             window.location.reload()
-        } catch (error) {
-            console.error('Error updating comida:', error);
-            alert('Failed to update comida.');
         }
 
     }
@@ -111,22 +99,12 @@ export default function CidadeList({sessionId}) {
     };
 
     const handleExcluirComida = async () => {
-        try {
-            await axios.delete(`${API_URL}comidas/${selectedComida.comida_id}/`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken,
-                },
-                withCredentials: true,
-            });
-            alert(`Comida ${selectedComida.nome} excluída com sucesso.`);
+        const response = await deleteData(PATH_COMIDAS, selectedComida.comida_id);
+        if (response.success) {
+            alert(`Comida "${selectedComida.nome}" excluída com sucesso.`);
             window.location.reload()
-        } catch (error) {
-            console.error('Error updating comida:', error);
-            alert('Failed to update comida.');
+            handleCloseModal()
         }
-        handleCloseModal()
-
     }
 
     const handleSearchChange = (event) => {
@@ -149,6 +127,14 @@ export default function CidadeList({sessionId}) {
             tipo: value,
             subtipo: SUBCATEGORIAS_COMIDA[value][0],  // Resetando subcategoria
         }));
+    };
+
+     const handleValueChange = (values) => {
+        const { floatValue, formattedValue } = values;
+        setSelectedComida({
+            ...selectedComida,
+            valor: floatValue, // Armazena como número
+        });
     };
 
     return (
@@ -259,14 +245,20 @@ export default function CidadeList({sessionId}) {
 
                                 <Form.Group as={Col} controlId="formGridEValor">
                                     <Form.Label>Valor</Form.Label>
-                                    <Form.Control
+                                    <NumericFormat
                                         name="valor"
                                         placeholder='30,50'
                                         value={selectedComida.valor}
-                                        onChange={handleChange}
-                                        type="number"
+                                        onValueChange={handleValueChange}
+                                        thousandSeparator="."
+                                        decimalSeparator=","
+                                        decimalScale={2}
+                                        fixedDecimalScale
+                                        allowNegative={false}
+                                        className="form-control"
                                     />
                                 </Form.Group>
+
                             </Row>
 
                             <Form.Group className="mb-3" controlId="formGridDescricao">

@@ -1,6 +1,4 @@
-import axios from "axios";
 import {useEffect, useState} from "react";
-import csrfToken from "../ApiCall/CsrfToken"
 import Button from "react-bootstrap/Button";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import Modal from "react-bootstrap/Modal";
@@ -9,15 +7,10 @@ import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
 // @ts-ignore
 import Evento from "./Evento.tsx"
-import {fetchData} from "../ApiCall/ApiCall";
+import {deleteData, fetchData} from "../ApiCall/ApiCall";
 import {InputGroup} from "react-bootstrap";
 import {faSearch, faTimes} from "@fortawesome/free-solid-svg-icons";
 import {TIPO_EVENTO} from "../util/OptionList"
-
-const API_URL = process.env.REACT_APP_API_URL;
-axios.defaults.xsrfCookieName = 'csrftoken';
-axios.defaults.xsrfHeaderName = 'X-CSRFToken';
-axios.defaults.withCredentials = true;
 
 interface Evento {
     id_evento: number,
@@ -44,10 +37,11 @@ export default function EventoList({sessionId}) {
     const [totalPages, setTotalPages] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
+    const PATH_EVENTO = 'eventos'
 
     useEffect(() => {
         const fetchEventos = async () => {
-            const response = await fetchData('eventos', currentPage, searchQuery, csrfToken, sessionId)
+            const response = await fetchData('eventos', currentPage, searchQuery)
             const eventos = response.data as Evento[];
             setEventos(eventos);
             setTotalPages(Math.ceil(response.count / 10));  // Ajuste o divisor de acordo com PAGE_SIZE do Django
@@ -93,19 +87,12 @@ export default function EventoList({sessionId}) {
     }
 
     const handleExcluirEvento = async () => {
-        try {
-            await axios.delete(`${API_URL}eventos/${selectedEvento.id_evento}`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                // @ts-ignore
-                credentials: 'include',
-            });
+        const response = await deleteData(PATH_EVENTO, selectedEvento.id_evento)
+        if (response.success) {
             alert(`Evento ${selectedEvento.nome} excluído com sucesso`)
             window.location.reload()
-        } catch (e) {
-            console.log("exception", e)
-            alert("Não foi possível excluir este evento")
+        } else {
+            alert("Houve um erro ao excluir o Evento. Por favor entre em contato com o suporte")
         }
     }
 

@@ -5,7 +5,6 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import {fetchDataWithId, fetchDataWithoutPagination} from "../ApiCall/ApiCall";
 import {STATUS_ORCAMENTO} from "../util/OptionList"
-import csrfToken from '../ApiCall/CsrfToken'
 // @ts-ignore
 import LogisticaOrcamentoComp from "./LogisticaOrcamentoComp.tsx";
 // @ts-ignore
@@ -130,10 +129,10 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
     }
 
     async function getModels() {
-        const logisticasResponse = await fetchDataWithoutPagination('logisticasWP', csrfToken, sessionId);
+        const logisticasResponse = await fetchDataWithoutPagination('logisticasWP');
         setLogisticas(logisticasResponse.data as LogisticaType[]);
 
-        const comidasResponse = await fetchDataWithoutPagination('comidasWP', csrfToken, sessionId);
+        const comidasResponse = await fetchDataWithoutPagination('comidasWP');
         setComidas(comidasResponse.data as ComidaType[]);
     }
 

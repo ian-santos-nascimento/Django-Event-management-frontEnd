@@ -1,13 +1,10 @@
 import {useEffect, useState} from "react";
-import axios from "axios";
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import Button from 'react-bootstrap/Button';
-import csrfToken from "../ApiCall/CsrfToken";
-import {fetchData, fetchDataWithoutPagination,} from '../ApiCall/ApiCall.jsx'
+import {deleteData, postData, fetchDataWithoutPagination, putData,} from '../ApiCall/ApiCall.jsx'
 
-const API_URL = process.env.REACT_APP_API_URL;
 
 interface Local {
     id_local: string,
@@ -29,10 +26,10 @@ interface Cidade {
 export default function Local({local, sessionId}) {
     const [localState, setLocalState] = useState<Local>(local);
     const [cidades, setCidades] = useState<Cidade[]>([]);
-
+    const PATH_LOCAL = 'locais'
     useEffect(() => {
             const fetchCidades = async () => {
-                const response = await fetchDataWithoutPagination('cidadesWP', csrfToken, sessionId)
+                const response = await fetchDataWithoutPagination('cidadesWP')
                 setCidades(response.data)
             }
             fetchCidades()
@@ -56,59 +53,39 @@ export default function Local({local, sessionId}) {
     };
 
     const handleExcluirLocal = async () => {
-        try {
-            await axios.delete(`${API_URL}locais/${localState.id_local}/`,
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    withCredentials: true,
-                });
-            alert('Local removed successfully!');
-
-        } catch (error) {
-            console.error('Error updating local:', error);
-            alert('Failed to update local.');
+        const response = await deleteData(PATH_LOCAL, localState.id_local);
+        if (response.success) {
+            alert("Local excluído com sucesso")
+            window.location.reload();
+        } else {
+            alert("Houve um erro ao tentar excluir o Local! Por favor entre em contato com o suporte!")
         }
-        window.location.reload();
-
     }
 
-    const voltar = () =>{
+    const voltar = () => {
         window.location.reload();
     }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        try {
-            if (local.id_local === null) {
-                await axios.post(`${API_URL}locais/`, localState, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    withCredentials: true,
-                })
-                alert('Local created successfully!');
-            } else {
-                await axios.put(`${API_URL}locais/${local.id_local}/`, localState, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    withCredentials: true,
-                });
-                alert('Local updated successfully!');
-            }
-        } catch (error) {
-            console.error('Error updating local:', error);
-            alert('Failed to update local.');
+        var response;
+        if (localState.id_local !== null) {
+            response = putData(PATH_LOCAL, localState, localState.id_local)
+        } else {
+            response = postData(PATH_LOCAL, localState)
         }
-        window.location.reload();
+        if (response.success) {
+            localState.id_local !== null ? alert("Local editado com sucesso")
+                : alert("Local salvo com sucesso!")
+            window.location.reload();
+        }else{
+            alert("Houve um erro ao salvar o local. Por favor entre em contato com o suporte")
+        }
     };
 
     return (
         <div className="container">
-            <h2 className="text-center">Criar/Editar  Localidade</h2>
+            <h2 className="text-center">Criar/Editar Localidade</h2>
             <Form onSubmit={handleSubmit}>
                 <Row className="mb-3">
                     <Form.Group as={Col} controlId="formGridNome">
@@ -182,16 +159,16 @@ export default function Local({local, sessionId}) {
 
                 <div className="d-flex justify-content-between w-100">
                     {local.id_local === null && (
-                         <Button
-                                variant="secondary"
-                                type="button" onClick={voltar}>
+                        <Button
+                            variant="secondary"
+                            type="button" onClick={voltar}>
                             Voltar
                         </Button>
                     )}
                     {local.id_local !== null && (
                         <Button
-                                variant="danger"
-                                type="button" onClick={handleExcluirLocal}>
+                            variant="danger"
+                            type="button" onClick={handleExcluirLocal}>
                             Excluir
                         </Button>
                     )}

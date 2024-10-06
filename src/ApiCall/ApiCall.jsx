@@ -1,17 +1,12 @@
-import axios from 'axios';
-
-const API_URL = process.env.REACT_APP_API_URL;
+import axiosInstance from './authService';
 
 
-export const fetchData = async (data, page, search = '', csrfToken, sessionId) => {
+export const fetchData = async (data, page, search = '') => {
     page = page !== null ? '?page=' + page : '';
+
     try {
-        const response = await axios.get(`${API_URL}${data}/${page}&search=${search}`, {
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            withCredentials: true,
-        });
+        const response = await axiosInstance.get(`${data}/${page}&search=${search}`
+        );
         return {
             data: response.data.results,
             count: response.data.count
@@ -26,11 +21,12 @@ export const fetchData = async (data, page, search = '', csrfToken, sessionId) =
 }
 
 
-export const fetchDataWithoutPagination = async (data, csrfToken, sessionId) => {
+export const fetchDataWithoutPagination = async (data) => {
     try {
-        const response = await axios.get(`${API_URL}${data}/`, {
+        const response = await axiosInstance.get(`${data}/`, {
             headers: {
                 'Content-Type': 'application/json',
+
             },
             withCredentials: true,
         });
@@ -47,7 +43,7 @@ export const fetchDataWithoutPagination = async (data, csrfToken, sessionId) => 
 
 export const fetchDataWithId = async (data, id) => {
     try {
-        const response = await axios.get(`${API_URL}${data}/${id}`)
+        const response = await axiosInstance.get(`${data}/${id}`)
         return {
             data: response.data,
         };
@@ -58,14 +54,9 @@ export const fetchDataWithId = async (data, id) => {
         }
     }
 }
-export const excludeData = async (path, id, csrfToken, sessionId) => {
+export const deleteData = async (path, id) => {
     try {
-        const response = await axios.delete(`${API_URL}${path}/${id}`, {
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            withCredentials: true,
-        });
+        const response = await axiosInstance.delete(`${path}/${id}`);
         return {success: true, data: response.data};
     } catch (error) {
         alert(error.response?.data?.error || "Ocorreu um erro ao excluir o dado.");
@@ -73,23 +64,33 @@ export const excludeData = async (path, id, csrfToken, sessionId) => {
     }
 };
 
-export const eventoPost = async (evento, csrfToken, sessionId) => {
+export const postData = async (path, data) => {
+    try {
+        const response = await axiosInstance.post(`${path}/`, data,);
+        return {success: true, data: response.data};
+    } catch (error) {
+        alert(error.response?.data?.error || "Ocorreu um erro ao salvar o dado.");
+        return {success: false, data: null};
+    }
+};
+
+export const putData = async (path, data, id) => {
+    try {
+        const response = await axiosInstance.put(`${path}/${id}/`, data,);
+        return {success: true, data: response.data};
+    } catch (error) {
+        alert(error.response?.data?.error || "Ocorreu um erro ao atualizar o dado.");
+        return {success: false, data: null};
+    }
+};
+
+export const eventoPost = async (evento) => {
     try {
         if (evento.id_evento !== null) {
-            await axios.put(`${API_URL}eventos/${evento.id_evento}/`, evento, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                withCredentials: true,
-            });
+            await axiosInstance.put(`eventos/${evento.id_evento}/`, evento, );
             alert('Evento updated successfully!');
         } else {
-            await axios.post(`${API_URL}eventos/`, evento, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                withCredentials: true,
-            });
+            await axiosInstance.post(`eventos/`, evento, );
             alert('Evento created successfully!');
         }
         window.location.reload();

@@ -1,59 +1,20 @@
-// Login.js
-
-import React, {useEffect, useState} from 'react';
-import axios from 'axios';
+import React, {useState} from 'react';
 import logo from '../bg-logo.png';
-const API_URL = process.env.REACT_APP_API_URL
-axios.defaults.xsrfCookieName = 'csrftoken';
-axios.defaults.xsrfHeaderName = 'X-CSRFToken';
-axios.defaults.withCredentials = true;
+import {login} from "../ApiCall/authService";
 
-const login = axios.create({baseURL: API_URL})
-
-const Login = ({setAuthenticated, setSessionId}) => {
+const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
-    const [csrfToken, setCsrfToken] = useState('');
 
-    useEffect(() => {
-        // Obter o CSRF token ao montar o componente
-        login.get('get-csrf-token/', {withCredentials: true})
-            .then(response => {
-                const token = response.data.csrfToken;
-                setCsrfToken(token)
-            })
-            .catch(error => {
-                console.error('Erro ao obter CSRF token:', error);
-            });
-    }, []);
-
-    const handleSubmit = async (event) => {
+   const handleSubmit = async (event) => {
         event.preventDefault();
         try {
-            console.log("CSRF Token:", csrfToken);
-            const responseData = await login.post('login/', {
-                    username: username,
-                    password: password
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken // Enviar o token CSRF no header
-                    }
-                }
-            );
-            setAuthenticated(true);
-            setSessionId(responseData.headers.get('sessionid'));
-
+            await login(username, password);
+            window.location.href = '/';
         } catch (error) {
-            if (error.response && error.response.data) {
-                const errorMessage = Array.isArray(error.response.data) ? error.response.data[0] : 'Invalid credentials';
-                setErrorMessage(errorMessage);
-            } else {
-                setErrorMessage('Something went wrong. Please try again.');
-            }
-            console.error('Error logging in:', error);
+            console.log(error)
+            setErrorMessage('Credenciais inválidas');
         }
     };
 

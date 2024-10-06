@@ -1,14 +1,10 @@
-import axios from "axios";
 import {useEffect, useState} from "react";
-import csrfToken from "../ApiCall/CsrfToken"
 import Button from "react-bootstrap/Button";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
 import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
-// @ts-ignore
-import Evento from "./Evento.tsx"
 // @ts-ignore
 import Orcamento from './Orcamento.tsx'
 // @ts-ignore
@@ -34,7 +30,7 @@ export default function OrcamentoList({sessionId}) {
 
     useEffect(() => {
         const fetchOrcamentos = async () => {
-            const response = await fetchData('orcamentos', currentPage, searchQuery, csrfToken, sessionId)
+            const response = await fetchData('orcamentos', currentPage, searchQuery)
             const orcamentos = response.data as OrcamentoType[];
             setOrcamentos(orcamentos);
             setTotalPages(Math.ceil(response.count / 10));
@@ -45,7 +41,7 @@ export default function OrcamentoList({sessionId}) {
 
     useEffect(() => {
         const fetchEventos = async () => {
-            const response = await fetchData('eventos', '', '', csrfToken, sessionId)
+            const response = await fetchData('eventos', '', '')
             const eventos = response.data as EventoType[];
             setEventos(eventos);
             setSelectedEvento(eventos[0])
@@ -74,7 +70,6 @@ export default function OrcamentoList({sessionId}) {
 
     const handleEditOrcamento = (orcamento) => {
         setSelectedOrcamento(orcamento)
-        console.log("ORCAMENTO SELECIONADO", orcamento)
         setSelectedEvento(orcamento.evento)
         setShowOrcamento(true)
     }

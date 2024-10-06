@@ -1,5 +1,4 @@
 import axios from "axios";
-import csrftoken from "../ApiCall/CsrfToken";
 import React from "react";
 import {BrowserRouter as Router, Link, Route, Routes,} from "react-router-dom";
 import Button from 'react-bootstrap/Button';
@@ -14,24 +13,16 @@ import ComidaList from "./CardapioList.tsx"
 import LogisticaList from "./LogisticaList.tsx"
 import EventoList from "./EventoList.tsx";
 import OrcamentoList from "./OrcamentoList.tsx";
+import Login from "./Login";
+import axiosInstance from "../ApiCall/authService";
 
-const apiUrl = process.env.REACT_APP_API_URL;
 const logo_url = './bg-logo.png'
 export default function NavBar({setAuthenticated, isAuthenticated}) {
     const logout = async () => {
-        try {
-            console.log("SAINDO LOGOUT")
-            await axios.post(`${apiUrl}logout/`, {}, {
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                withCredentials: true
-            });
-            setAuthenticated(false);
-            window.location.reload(); // Refresh the page
-        } catch (error) {
-            console.error('Error logging out:', error);
-        }
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        axiosInstance.defaults.headers['Authorization'] = null;
+        window.location.href = "/login"
     };
     return (
         <Router>
@@ -104,6 +95,8 @@ export default function NavBar({setAuthenticated, isAuthenticated}) {
                     element={<EventoList/>}
                 ></Route>
                 <Route path='/orcamentos' element={<OrcamentoList/>}>
+                </Route>
+                <Route path='/login' element={<Login/>}>
                 </Route>
             </Routes>
         </Router>

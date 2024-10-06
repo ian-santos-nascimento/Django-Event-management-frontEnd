@@ -3,7 +3,6 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 // @ts-ignore
 import Local from './Local.tsx';
-import csrftoken from "../ApiCall/CsrfToken";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {fetchData,} from '../ApiCall/ApiCall.jsx'
 import {InputGroup} from "react-bootstrap";
@@ -33,7 +32,7 @@ export default function LocalList({sessionId}) {
 
     useEffect(() => {
         const fetchLocais = async () => {
-            const response = await fetchData('locais', currentPage, searchQuery, csrftoken, sessionId);
+            const response = await fetchData('locais', currentPage, searchQuery);
             const locais = response.data as Local[];
             setLocais(locais);
             setTotalPages(Math.ceil(response.count / 10));

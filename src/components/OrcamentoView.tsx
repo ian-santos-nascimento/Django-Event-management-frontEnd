@@ -6,7 +6,7 @@ import Form from "react-bootstrap/Form";
 import {Accordion, FormGroup} from "react-bootstrap";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
-import {fetchDataWithId, excludeData} from "../ApiCall/ApiCall.jsx"
+import {fetchDataWithId, deleteData} from "../ApiCall/ApiCall.jsx"
 import {OrcamentoType} from "../types";
 
 
@@ -37,7 +37,7 @@ export default function OrcamentoView({orcamentoId, sessionId}) {
     }
 
     const handleExcluirOrcamento = async () => {
-        const response = await excludeData("orcamentos", orcamentoId);
+        const response = await deleteData("orcamentos", orcamentoId);
         if (response.success) {
             window.location.reload();  // Reinicia a página
         }

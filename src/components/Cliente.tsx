@@ -1,11 +1,11 @@
-import {useEffect, useState} from "react";
-import axios from "axios";
+import {useState} from "react";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 import InputMask from 'react-input-mask';
 import {FormControl} from "react-bootstrap";
+import {putData, postData,} from '../ApiCall/ApiCall.jsx'
 
 interface Cliente {
     id_cliente: string,
@@ -33,11 +33,10 @@ interface Cliente {
 
 }
 
-const API_URL = process.env.REACT_APP_API_URL;
-
-export default function Cliente({cliente, csrfToken, sessionId, setSelectedClienteList}) {
+export default function Cliente({cliente, setSelectedClienteList}) {
     const [selectedCliente, setSelectedCliente] = useState<Cliente>(cliente);
     const [validated, setValidated] = useState(false);
+    const CLIENTE_PATH = 'clientes'
 
 
     function cnpjMask(value) {
@@ -54,7 +53,6 @@ export default function Cliente({cliente, csrfToken, sessionId, setSelectedClien
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const form = e.currentTarget;
-        console.log(selectedCliente)
         if (form.checkValidity() === false) {
             e.stopPropagation();
             setValidated(true);
@@ -66,28 +64,18 @@ export default function Cliente({cliente, csrfToken, sessionId, setSelectedClien
 
 
     const handleClienteSent = async () => {
-        try {
-            if (selectedCliente?.id_cliente !== null) {
-                await axios.put(`${API_URL}clientes/${selectedCliente.id_cliente}/`, selectedCliente, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    withCredentials: true,
-                });
-                alert('Cliente updated successfully!');
-            } else {
-                await axios.post(`${API_URL}clientes/`, selectedCliente, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    withCredentials: true,
-                });
-                alert('Cliente created successfully!');
-            }
+        var response;
+        if (selectedCliente?.id_cliente !== null) {
+            response = await putData(CLIENTE_PATH, selectedCliente, selectedCliente.id_cliente);
+        } else {
+            response = await postData(CLIENTE_PATH, selectedCliente);
+        }
+        if (response.success) {
+            selectedCliente.id_cliente !== null ? alert("Cliente editado com sucesso")
+                : alert("Cliente salvo com sucesso")
             window.location.reload();
-        } catch (error) {
-            console.error('Error updating Cliente:', error);
-            alert('Failed to update Cliente.');
+        }else{
+            alert("Houve um erro ao processar a ação. Por favor entre em contato com o suporte")
         }
     };
 

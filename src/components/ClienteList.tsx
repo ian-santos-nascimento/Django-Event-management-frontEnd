@@ -1,5 +1,4 @@
 import {useEffect, useState} from "react";
-import axios from "axios";
 import Button from "react-bootstrap/Button";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import Modal from "react-bootstrap/Modal";
@@ -8,7 +7,7 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 // @ts-ignore
 import Cliente from "./Cliente.tsx";
-import {fetchData,} from '../ApiCall/ApiCall.jsx'
+import {deleteData, fetchData,} from '../ApiCall/ApiCall.jsx'
 import {InputGroup} from "react-bootstrap";
 import {faSearch, faTimes} from "@fortawesome/free-solid-svg-icons";
 
@@ -35,7 +34,6 @@ interface Cliente {
     fim_contrato: string,
 }
 
-const API_URL = process.env.REACT_APP_API_URL;
 
 export default function CidadeList({sessionId, csrfToken}) {
     const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -45,11 +43,12 @@ export default function CidadeList({sessionId, csrfToken}) {
     const [totalPages, setTotalPages] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
+    const CLIENTE_PATH = 'clientes'
 
 
     useEffect(() => {
         const fetchClientes = async () => {
-            const response = await fetchData('clientes', currentPage, searchQuery, csrfToken, sessionId);
+            const response = await fetchData(CLIENTE_PATH, currentPage, searchQuery);
             const clientes = response.data as Cliente[];
             setClientes(clientes);
             setTotalPages(Math.ceil(response.count / 10));
@@ -101,20 +100,14 @@ export default function CidadeList({sessionId, csrfToken}) {
     }
 
     const handleExcluirCliente = async () => {
-        try {
-            await axios.delete(`${API_URL}clientes/${selectedCliente.id_cliente}/`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                withCredentials: true,
-            });
+        var response = await deleteData(CLIENTE_PATH, selectedCliente.id_cliente)
+        if (response.success) {
             alert(`Cliente ${selectedCliente.nome} excluído com sucesso.`);
             window.location.reload();
-        } catch (error) {
-            console.error('Error updating Cliente:', error);
-            alert('Failed to update Cliente.');
+        }else{
+            alert("Houve um problema ao excluir o cliente. entre em contato com o suporte")
         }
-        handleCloseModal();
+
     };
 
     const handleSearchChange = (event) => {
@@ -132,8 +125,8 @@ export default function CidadeList({sessionId, csrfToken}) {
     }
 
     if (selectedCliente && !showModal) {
-        return <Cliente sessionId={sessionId} cliente={selectedCliente} csrfToken={csrfToken}
-                        setSelectedClienteList={setSelectedCliente}/>
+        return <Cliente
+            setSelectedClienteList={setSelectedCliente} cliente={selectedCliente}/>
     }
 
     return (

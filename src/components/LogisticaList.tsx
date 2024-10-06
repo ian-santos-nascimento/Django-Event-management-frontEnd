@@ -1,17 +1,14 @@
 import {useEffect, useState} from "react";
-import axios from "axios";
-
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import csrfToken from "../ApiCall/CsrfToken";
 import {TIPO_LOGISTICA, ESTADOS_BRASILEIROS} from "../util/OptionList.js";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {fetchData,} from '../ApiCall/ApiCall.jsx'
 import {InputGroup} from "react-bootstrap";
 import {faSearch, faTimes} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {deleteData, fetchData, postData, putData,} from '../ApiCall/ApiCall.jsx'
 
 
 interface Logistica {
@@ -24,10 +21,6 @@ interface Logistica {
 
 }
 
-const API_URL = process.env.REACT_APP_API_URL;
-axios.defaults.xsrfCookieName = 'csrftoken';
-axios.defaults.xsrfHeaderName = 'X-CSRFToken';
-axios.defaults.withCredentials = true;
 
 export default function LogisticaList({sessionId, csrfToken}) {
     const [logisticas, setLogisticas] = useState<Logistica[]>([])
@@ -37,11 +30,10 @@ export default function LogisticaList({sessionId, csrfToken}) {
     const [totalPages, setTotalPages] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
-
+    const PATH_LOGISTICA = 'logisticas'
     useEffect(() => {
         const fetchLogisticas = async () => {
-            const response = await fetchData('logisticas', currentPage, searchQuery, csrfToken, sessionId)
-
+            const response = await fetchData('logisticas', currentPage, searchQuery)
             const comidas = response.data as Logistica[];
             setLogisticas(comidas);
             setTotalPages(Math.ceil(response.count / 10));
@@ -77,28 +69,19 @@ export default function LogisticaList({sessionId, csrfToken}) {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        try {
-            if (selectedLogistica.id_logistica !== null) {
-                await axios.put(`${API_URL}logisticas/${selectedLogistica.id_logistica}/`, selectedLogistica, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    withCredentials: true,
-                });
-                alert('Logistica updated successfully!');
-            } else {
-                await axios.post(`${API_URL}logisticas/`, selectedLogistica, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    withCredentials: true,
-                });
-                alert('Logistica created successfully!');
-            }
-            window.location.reload()
-        } catch (error) {
-            console.error('Error updating Logistica:', error);
-            alert('Failed to update Logistica.');
+        var response;
+        if (selectedLogistica.id_logistica !== null) {
+            response = await putData(PATH_LOGISTICA, selectedLogistica, selectedLogistica.id_logistica)
+        } else {
+            response = await postData(PATH_LOGISTICA, selectedLogistica)
+        }
+
+        if(response.success){
+            selectedLogistica.id_logistica !== null ? alert("Logistica editada com sucesso!")
+                : alert("Logistica criada com sucesso")
+            window.location.reload();
+        }else{
+            alert("Houve um erro ao processar a requisição. Por favor entre em contato com o suporte")
         }
 
     }
@@ -109,21 +92,13 @@ export default function LogisticaList({sessionId, csrfToken}) {
     };
 
     const handleExcluirLogistica = async () => {
-        try {
-            await axios.delete(`${API_URL}logisticas/${selectedLogistica.id_logistica}/`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                withCredentials: true,
-            });
-            alert(`Logistica ${selectedLogistica.nome} excluída com sucesso.`);
+        const response = await deleteData(PATH_LOGISTICA, selectedLogistica.id_logistica);
+        if(response.success){
+            alert("Logistica excluída com sucesso")
             window.location.reload()
-        } catch (error) {
-            console.error('Error updating Logistica:', error);
-            alert('Failed to update Logistica.');
+        }else {
+            alert("Houve um erro ao excluir a Logistica. Por favor entre em contato com o suporte")
         }
-        handleCloseModal()
-
     }
     const handleSearchChange = (event) => {
         setSearchTerm(event.target.value);

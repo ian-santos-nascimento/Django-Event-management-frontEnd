@@ -1,12 +1,11 @@
 import Row from "react-bootstrap/Row";
 import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
-import axios from "axios";
-import csrfToken from '../ApiCall/CsrfToken'
 import Modal from "react-bootstrap/Modal";
 import {useEffect, useState} from "react";
 import {OverlayTrigger, Tooltip, Button} from 'react-bootstrap';
 import {faCheck, faTimes,} from "@fortawesome/free-solid-svg-icons";
+import {deleteData, postData,} from '../ApiCall/ApiCall.jsx'
 
 import {
     CardapioOrcamentoType,
@@ -17,10 +16,10 @@ import {
     OrcamentoType
 } from "../types";
 import {Accordion} from "react-bootstrap";
+// @ts-ignore
 import verificarLogistica from "../util/CalculoOrcamento.ts";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
-const API_URL = process.env.REACT_APP_API_URL;
 
 interface Props {
     cardapioSelecionado: ComidaType[];
@@ -106,22 +105,10 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        try {
-            await axios.post(`${API_URL}orcamentos-create/`, orcamento, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                withCredentials: true,
-            })
-            alert('Orcamento created successfully!');
+        const response = await postData('orcamentos-create', orcamento)
+        if (response.success){
+            alert("Orçamento salvo com sucesso")
             window.location.reload()
-        } catch (exception) {
-            if (exception.response && exception.response.data && exception.response.data.error) {
-                alert(exception.response.data.error);
-            } else {
-                alert('Não foi possível salvar o Orçamento');
-            }
-            console.log("Error tentando salvar orcamento", orcamento, '\n erro:', exception);
         }
     }
 

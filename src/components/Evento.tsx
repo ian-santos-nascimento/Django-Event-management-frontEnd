@@ -5,7 +5,6 @@ import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 
 import {eventoPost, fetchData,} from '../ApiCall/ApiCall.jsx'
-import csrfToken from "../ApiCall/CsrfToken"
 import {TIPO_EVENTO} from "../util/OptionList"
 
 interface Evento {
@@ -46,11 +45,11 @@ export default function Evento({evento, sessionId}) {
 
     useEffect(() => {
             const fetchLocalApi = async () => {
-                const response = await fetchData('locais', '', '', csrfToken, sessionId)
+                const response = await fetchData('locais', '', '')
                 setLocais(response.data)
             };
             const fetchClienteApi = async () => {
-                const response = await fetchData('clientes', '', '', csrfToken, sessionId)
+                const response = await fetchData('clientes', '', '')
                 setClientes(response.data)
             }
             fetchLocalApi()
@@ -79,7 +78,7 @@ export default function Evento({evento, sessionId}) {
 
 
     const handleEventoSent = async () => {
-        await eventoPost(selectedEvento, csrfToken, sessionId)
+        await eventoPost(selectedEvento)
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {

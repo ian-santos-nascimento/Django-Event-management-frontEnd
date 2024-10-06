@@ -48,7 +48,6 @@ const CardapioOrcamentoComp: React.FC<Props> = ({
             setOrcamento({...orcamento, valor_total_comidas: total})
         }
         setAgrupadasPorTipo(agruparComidasPorTipo(selectedCardapio));
-        console.log("GRUPO TIPO", agrupadasPorTipo)
     }, [orcamento.comidas, orcamento.valor_desconto_comidas, selectedCardapio]);
 
     const handleQuantityChange = (comida_id: number, quantidade: number) => {
