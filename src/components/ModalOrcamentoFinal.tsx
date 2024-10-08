@@ -2,20 +2,12 @@ import Row from "react-bootstrap/Row";
 import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
 import Modal from "react-bootstrap/Modal";
-import {useEffect, useState} from "react";
-import {OverlayTrigger, Tooltip, Button} from 'react-bootstrap';
-import {faCheck, faTimes,} from "@fortawesome/free-solid-svg-icons";
-import {deleteData, postData,} from '../ApiCall/ApiCall.jsx'
+import {useEffect} from "react";
+import {Accordion, Button, OverlayTrigger, Tooltip} from 'react-bootstrap';
+import {faCheck,} from "@fortawesome/free-solid-svg-icons";
+import {orcamentoPost,} from '../ApiCall/ApiCall.jsx'
 
-import {
-    CardapioOrcamentoType,
-    ComidaType,
-    EventoType,
-    LogisticaCidadeType,
-    LogisticaType,
-    OrcamentoType
-} from "../types";
-import {Accordion} from "react-bootstrap";
+import {ComidaType, EventoType, LogisticaCidadeType, LogisticaType, OrcamentoType} from "../types";
 // @ts-ignore
 import verificarLogistica from "../util/CalculoOrcamento.ts";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -105,11 +97,12 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        const response = await postData('orcamentos-create', orcamento)
-        if (response.success){
+        const response = await orcamentoPost(orcamento)
+        if (response.success) {
             alert("Orçamento salvo com sucesso")
             window.location.reload()
         }
+
     }
 
     const handleCloseModal = () => {
@@ -225,7 +218,8 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
                             <Accordion>
                                 <Accordion.Item as={'p'} eventKey="0" className='mt-3'>
                                     <Accordion.Header as={'h5'}>Comidas:
-                                        R${orcamento.valor_total_comidas | 0} ({logisticaCidade?.taxa_deslocamento * 100}% taxa de
+                                        R${orcamento.valor_total_comidas | 0} ({logisticaCidade?.taxa_deslocamento * 100 || 0}%
+                                        taxa de
                                         deslocamento incluso)</Accordion.Header>
                                     <Accordion.Body style={{backgroundColor: '##aab0b5;'}}>
                                         {orcamento.comidas.map(comida => (
@@ -266,7 +260,11 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
                                 </Accordion.Item>
                             </Accordion>
                         </Row>
-
+                        <Row>
+                            <p>
+                                <strong>Total: R$ { (parseFloat(orcamento.valor_total) || 0).toFixed(2) }</strong>
+                            </p>
+                        </Row>
                         <Button className={'mt-3'} variant="primary" type="submit" onClick={handleSubmit}>
                             {orcamento !== null && orcamento.id_orcamento === null ? 'Criar' : 'Editar'}
                         </Button>

@@ -32,7 +32,8 @@ export default function CidadeList({csrfToken, sessionId}) {
     const [searchTerm, setSearchTerm] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
     const filteredSubcategories = SUBCATEGORIAS_COMIDA[selectedComida?.tipo] || [];
-
+    const [validated, setValidated] = useState(false);
+    const [errorMessages, setErrorMessages] = useState({});
     const PATH_COMIDAS = 'comidas'
 
 
@@ -73,25 +74,34 @@ export default function CidadeList({csrfToken, sessionId}) {
         setSelectedComida((prevComida) => prevComida ? {...prevComida, [name]: value} : null);
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault()
-        var success = false
-        if (selectedComida.comida_id !== null) {
-            success = await putData(PATH_COMIDAS, selectedComida, selectedComida.comida_id).then(response => {
-                return response.success
-            })
+    const handleSubmit = async (event) => {
+        const form = event.currentTarget;
+        event.preventDefault();
+        event.stopPropagation();
+        setErrorMessages({});
+        console.log("FORM VALIDO", form.checkValidity())
+        if (form.checkValidity() === false) {
+            setValidated(true);
         } else {
-            success = await postData(PATH_COMIDAS, selectedComida).then(response => {
-                return response.success
-            })
-        }
-        if (success) {
-            selectedComida.comida_id !== null ? alert("Comida atualizada com sucesso")
-                : alert("Comida criada com sucesso")
-            window.location.reload()
-        }
+            setValidated(true);
+            var success = false
+            if (selectedComida.comida_id !== null) {
+                success = await putData(PATH_COMIDAS, selectedComida, selectedComida.comida_id).then(response => {
+                    return response.success
+                })
+            } else {
+                success = await postData(PATH_COMIDAS, selectedComida).then(response => {
+                    return response.success
+                })
+            }
+            if (success) {
+                selectedComida.comida_id !== null ? alert("Comida atualizada com sucesso")
+                    : alert("Comida criada com sucesso")
+                window.location.reload()
+            }
 
-    }
+        }
+    };
 
     const handleCloseModal = () => {
         setShowModal(false);
@@ -129,8 +139,8 @@ export default function CidadeList({csrfToken, sessionId}) {
         }));
     };
 
-     const handleValueChange = (values) => {
-        const { floatValue, formattedValue } = values;
+    const handleValueChange = (values) => {
+        const {floatValue, formattedValue} = values;
         setSelectedComida({
             ...selectedComida,
             valor: floatValue, // Armazena como número
@@ -217,37 +227,48 @@ export default function CidadeList({csrfToken, sessionId}) {
                 </Modal.Header>
                 <Modal.Body>
                     {selectedComida && (
-                        <Form onSubmit={handleSubmit}>
+                        <Form noValidate validated={validated} onSubmit={handleSubmit}>
                             <Row className="mb-3">
                                 <Form.Group as={Col} controlId="formGridNome">
                                     <Form.Label>Nome</Form.Label>
                                     <Form.Control
+                                        required
                                         name="nome"
                                         value={selectedComida.nome}
                                         onChange={handleChange}
                                         type="text"
                                         placeholder="Nome"
+                                        isInvalid={!!errorMessages.nome}
                                     />
+                                    <Form.Control.Feedback type="invalid">
+                                        {errorMessages.nome || 'Por favor, insira o nome.'}
+                                    </Form.Control.Feedback>
                                 </Form.Group>
-
                             </Row>
-                            <Row>
+
+                            <Row className="mb-3">
                                 <Form.Group as={Col} controlId="formGridQtdMinima">
-                                    <Form.Label>Quantidade minima</Form.Label>
+                                    <Form.Label>Quantidade Mínima</Form.Label>
                                     <Form.Control
+                                        required
                                         name="quantidade_minima"
-                                        placeholder='4'
+                                        placeholder="4"
                                         value={selectedComida.quantidade_minima}
                                         onChange={handleChange}
                                         type="number"
+                                        isInvalid={!!errorMessages.quantidade_minima}
+                                        min="0"
                                     />
+                                    <Form.Control.Feedback type="invalid">
+                                        {errorMessages.quantidade_minima || 'Por favor, insira a quantidade mínima.'}
+                                    </Form.Control.Feedback>
                                 </Form.Group>
 
                                 <Form.Group as={Col} controlId="formGridEValor">
                                     <Form.Label>Valor</Form.Label>
                                     <NumericFormat
                                         name="valor"
-                                        placeholder='30,50'
+                                        placeholder="30,50"
                                         value={selectedComida.valor}
                                         onValueChange={handleValueChange}
                                         thousandSeparator="."
@@ -255,25 +276,31 @@ export default function CidadeList({csrfToken, sessionId}) {
                                         decimalScale={2}
                                         fixedDecimalScale
                                         allowNegative={false}
-                                        className="form-control"
+                                        className={`form-control ${errorMessages.valor ? 'is-invalid' : ''}`}
                                     />
+                                    <div className="invalid-feedback">
+                                        {errorMessages.valor || 'Por favor, insira o valor.'}
+                                    </div>
                                 </Form.Group>
-
                             </Row>
 
                             <Form.Group className="mb-3" controlId="formGridDescricao">
-                                <Form.Label>Descricao</Form.Label>
+                                <Form.Label>Descrição</Form.Label>
                                 <Form.Control
+                                    required
                                     name="descricao"
                                     value={selectedComida.descricao}
                                     onChange={handleChange}
                                     placeholder="Comida feita pelo chef"
-                                    type='text'
+                                    type="text"
+                                    isInvalid={!!errorMessages.descricao}
                                 />
+                                <Form.Control.Feedback type="invalid">
+                                    {errorMessages.descricao || 'Por favor, insira a descrição.'}
+                                </Form.Control.Feedback>
                             </Form.Group>
 
-                            <Row>
-
+                            <Row className="mb-3">
                                 <Form.Group as={Col} controlId="formGriCategoria">
                                     <Form.Label>Categoria</Form.Label>
                                     <Form.Select
@@ -281,13 +308,17 @@ export default function CidadeList({csrfToken, sessionId}) {
                                         name="tipo"
                                         value={selectedComida.tipo}
                                         onChange={handleCategoryChange} // Atualiza a categoria e reseta a subcategoria
+                                        isInvalid={!!errorMessages.tipo}
                                     >
+                                        <option value="">Selecione uma categoria</option>
                                         {TIPO_COMIDA.map((tipo, index) => (
-                                            <option value={tipo} key={index}>{tipo}</option>
+                                            <option value={tipo} key={index}>
+                                                {tipo}
+                                            </option>
                                         ))}
                                     </Form.Select>
                                     <Form.Control.Feedback type="invalid">
-                                        Escolha o tipo da comida
+                                        {errorMessages.tipo || 'Escolha o tipo da comida.'}
                                     </Form.Control.Feedback>
                                 </Form.Group>
 
@@ -298,32 +329,36 @@ export default function CidadeList({csrfToken, sessionId}) {
                                         name="subtipo"
                                         value={selectedComida.subtipo}
                                         onChange={handleChange} // Atualiza a subcategoria
+                                        isInvalid={!!errorMessages.subtipo}
+                                        disabled={!selectedComida.tipo} // Desabilita se nenhuma categoria estiver selecionada
                                     >
+                                        <option value="">Selecione uma subcategoria</option>
                                         {filteredSubcategories.map((sub, index) => (
-                                            <option value={sub} key={index}>{sub}</option>
+                                            <option value={sub} key={index}>
+                                                {sub}
+                                            </option>
                                         ))}
                                     </Form.Select>
                                     <Form.Control.Feedback type="invalid">
-                                        Escolha a subcategoria da comida
+                                        {errorMessages.subtipo || 'Escolha a subcategoria da comida.'}
                                     </Form.Control.Feedback>
                                 </Form.Group>
-
                             </Row>
-
-                        </Form>
-                    )}
+                            <Modal.Footer className="modal-footer-custom">
+                                <div className="d-flex justify-content-between w-100">
+                                    <Button disabled={selectedComida !== null && selectedComida.comida_id === null}
+                                            variant="danger"
+                                            type="submit" onClick={handleExcluirComida}>
+                                        Excluir
+                                    </Button>
+                                    <Button variant="primary" type="submit" >
+                                        {selectedComida !== null && selectedComida.comida_id === null ? 'Criar' : 'Editar'}
+                                    </Button>
+                                </div>
+                            </Modal.Footer>
+                        </Form>)}
                 </Modal.Body>
-                <Modal.Footer className="modal-footer-custom">
-                    <div className="d-flex justify-content-between w-100">
-                        <Button disabled={selectedComida !== null && selectedComida.comida_id === null} variant="danger"
-                                type="submit" onClick={handleExcluirComida}>
-                            Excluir
-                        </Button>
-                        <Button variant="primary" type="submit" onClick={handleSubmit}>
-                            {selectedComida !== null && selectedComida.comida_id === null ? 'Criar' : 'Editar'}
-                        </Button>
-                    </div>
-                </Modal.Footer>
+
             </Modal>
         </div>
     );

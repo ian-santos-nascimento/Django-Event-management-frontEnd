@@ -135,7 +135,7 @@ export default function OrcamentoList({sessionId}) {
             <table className="table table-success">
                 <thead>
                 <tr>
-                    <th scope="col">ID</th>
+                    <th scope="col">Codigo Evento</th>
                     <th scope="col">Cliente</th>
                     <th scope="col">Evento</th>
                     <th scope="col">Status</th>
@@ -147,7 +147,7 @@ export default function OrcamentoList({sessionId}) {
                 <tbody>
                 {orcamentos.map(item =>
                     <tr key={item.id_orcamento}>
-                        <td>{item.id_orcamento}</td>
+                        <td>{item.evento.codigo_evento}</td>
                         <td>{item.cliente.nome}</td>
                         <td>{item.evento.nome}</td>
                         <td>{item.status}</td>

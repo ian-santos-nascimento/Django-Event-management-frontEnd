@@ -42,6 +42,8 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
     const [filterLogistica, setFilterLogistica] = useState('');
     const isFirstRender = useRef(true);
     const [loadModalFinal, setLoadModalFinal] = useState(false)
+    const [validated, setValidated] = useState(false);
+    const [errorMessages, setErrorMessages] = useState({});
 
     useEffect(() => {
         getModels();
@@ -113,6 +115,35 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
         }, 5000)
     }, []);
 
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const errors = {};
+        if (!orcamento.nome || orcamento.nome.trim() === '') {
+            errors.nome = 'Por favor, insira o nome.';
+        }
+        if (!orcamento.status || orcamento.status.trim() === '') {
+            errors.status = 'Por favor, selecione o status do orçamento.';
+        }
+         if (!orcamento.observacoes || orcamento.observacoes.trim() === '') {
+            errors.observacoes = 'Por favor, adicione uma observação.';
+        }
+        if (!orcamento.cliente || !orcamento.cliente.id_cliente) {
+            errors.cliente = 'Por favor, selecione um cliente.';
+        }
+        if (!orcamento.comidas || orcamento.comidas.length === 0) {
+            errors.comidasSelecionadas = 'Por favor, selecione ao menos uma comida.';
+        }
+        setErrorMessages(errors);
+        setValidated(true);
+
+        // Se não houver erros, prossegue para atualizar a variável
+        if (Object.keys(errors).length === 0) {
+            handleShowModalFinal();
+        }
+    };
+
     const handleBack = () => {
         window.location.reload()
     }
@@ -174,7 +205,7 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
     return (
         <div className='container'>
             <h2 className='text-center'>Orçamento</h2>
-            <Form>
+            <Form noValidate validated={validated} onSubmit={handleSubmit}>
                 <Row>
                     <Form.Group as={Col} controlId="formGridNome">
                         <Form.Label>Nome</Form.Label>
@@ -183,33 +214,49 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
                             value={orcamento.nome}
                             onChange={handleChange}
                             type="text"
+                            required
                             placeholder="Nome"
+                            isInvalid={!!errorMessages.nome}
                         />
+                        <Form.Control.Feedback type="invalid">
+                            {errorMessages.nome}
+                        </Form.Control.Feedback>
                     </Form.Group>
+
                     <Form.Group as={Col} controlId="formGridStatus">
                         <Form.Label>Status do Orçamento</Form.Label>
                         <Form.Select
                             name="status"
                             value={orcamento.status}
                             onChange={handleChange}
+                            isInvalid={!!errorMessages.status}
                         >
+                            <option value="">Selecione o status</option>
                             {STATUS_ORCAMENTO.map((status, index) => (
                                 <option key={index} value={status.value}>
                                     {status.name}
                                 </option>
                             ))}
                         </Form.Select>
+                        <Form.Control.Feedback type="invalid">
+                            {errorMessages.status}
+                        </Form.Control.Feedback>
                     </Form.Group>
                 </Row>
                 <Row>
-                    <Form.Group as={Col} controlId="formGridNome">
+                    <Form.Group as={Col} controlId="formGridObservacoes">
                         <Form.Label>Observações</Form.Label>
                         <Form.Control
                             name="observacoes"
+                            required
+                            isInvalid={!!errorMessages.observacoes}
                             value={orcamento.observacoes}
                             onChange={handleChange}
                             as="textarea"
                         />
+                        <Form.Control.Feedback type="invalid">
+                            {errorMessages.observacoes}
+                        </Form.Control.Feedback>
                     </Form.Group>
                 </Row>
                 <Row>
@@ -217,34 +264,61 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
                         <Form.Label>Cliente do Evento para Orçamento</Form.Label>
                         <Form.Select
                             name="cliente"
-                            value={orcamento?.cliente?.id_cliente}
+                            value={orcamento?.cliente?.id_cliente || ''}
                             onChange={handleToggleCliente}
+                            isInvalid={!!errorMessages.cliente}
                         >
+                            <option value="">Selecione um cliente</option>
                             {evento.clientes.map((cliente) => (
-                                <option key={cliente.id_cliente}
-                                        value={cliente.id_cliente}>{cliente.nome}{`-Taxa(${cliente.taxa_financeira * 100}%)`}</option>
+                                <option
+                                    key={cliente.id_cliente}
+                                    value={cliente.id_cliente}
+                                >
+                                    {cliente.nome}
+                                    {` - Taxa(${cliente.taxa_financeira * 100}%)`}
+                                </option>
                             ))}
                         </Form.Select>
+                        <Form.Control.Feedback type="invalid">
+                            {errorMessages.cliente}
+                        </Form.Control.Feedback>
                     </Form.Group>
                 </Row>
 
-                <CardapioOrcamentoComp cardapio={comidas} logisticaCidade={logisticaCidade}
-                                       selectedCardapio={comidasSelecionadas} setOrcamento={setOrcamento}
-                                       orcamento={orcamento} evento={evento}
-                                       setSelectedCardapio={setComidasSelecionadas}/>
-
-                <LogisticaOrcamentoComp orcamento={orcamento} setOrcamento={setOrcamento}
-                                        logisticaCidade={logisticaCidade}
-                                        evento={evento} logisticas={logisticas}
-                                        filterLogisticaState={filterLogistica}
-                                        logisticasSelecionadas={logisticasSelecionadas} setLogisticas={setLogisticas}
-                                        setLogisticasSelecionadas={setLogisticasSelecionadas}
+                {/* Componentes para Cardápio e Logística */}
+                <CardapioOrcamentoComp
+                    cardapio={comidas}
+                    logisticaCidade={logisticaCidade}
+                    selectedCardapio={comidasSelecionadas}
+                    setOrcamento={setOrcamento}
+                    orcamento={orcamento}
+                    evento={evento}
+                    setSelectedCardapio={setComidasSelecionadas}
+                    isInvalid={!!errorMessages.comidasSelecionadas}
                 />
-                <div className=" mt-3 mb-3 d-flex justify-content-between w-100">
-                    <Button className={'mt-3'} variant="secondary" onClick={handleBack} type="reset">
+                {errorMessages.comidasSelecionadas && (
+                    <div className="text-danger">
+                        {errorMessages.comidasSelecionadas}
+                    </div>
+                )}
+
+                <LogisticaOrcamentoComp
+                    orcamento={orcamento}
+                    setOrcamento={setOrcamento}
+                    logisticaCidade={logisticaCidade}
+                    evento={evento}
+                    logisticas={logisticas}
+                    filterLogisticaState={filterLogistica}
+                    logisticasSelecionadas={logisticasSelecionadas}
+                    setLogisticas={setLogisticas}
+                    setLogisticasSelecionadas={setLogisticasSelecionadas}
+                />
+
+                <div className="mt-3 mb-3 d-flex justify-content-between w-100">
+                    <Button className="mt-3" variant="secondary" onClick={handleBack} type="reset">
                         Retornar
                     </Button>
-                    <Button className={'mt-3'} variant="primary" type="button" onClick={handleShowModalFinal}>
+                    <Button className="mt-3" variant="primary" type="submit">
                         Prosseguir
                     </Button>
                 </div>

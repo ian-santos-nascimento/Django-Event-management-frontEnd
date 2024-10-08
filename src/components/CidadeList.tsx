@@ -70,15 +70,13 @@ export default function CidadeList({sessionId}) {
             success = await putData('cidades', selectedCidade.id_cidade, selectedCidade).then(response => {
                 return response.success
             })
-            alert('Cidade updated successfully!');
         } else {
             success = await postData('cidades', selectedCidade).then(response => {
                 return response.success
             })
-            alert('Cidade created successfully!');
         }
         if (success) {
-            selectedCidade.id_cidade !== null ? alert("Criação de Cidade realizada com sucesso") : alert("Edição da cidade realizada com sucesso!")
+            selectedCidade.id_cidade === null ? alert("Criação de Cidade realizada com sucesso") : alert("Edição da cidade realizada com sucesso!")
             window.location.reload()
         } else {
             alert("Houve um erro ao salvar a cidade! Verifique os campos e entre em contato com o suporte!")

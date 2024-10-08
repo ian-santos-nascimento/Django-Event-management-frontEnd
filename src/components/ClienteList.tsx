@@ -291,7 +291,7 @@ export default function CidadeList({sessionId, csrfToken}) {
                                         name="data_inicio_contrato"
                                         value={selectedCliente.inicio_contrato}
                                         disabled={true}
-                                        type="date"
+                                        type="text"
                                     />
 
                                 </Form.Group>
@@ -301,7 +301,7 @@ export default function CidadeList({sessionId, csrfToken}) {
                                         name="data_fim_contrato"
                                         value={selectedCliente.fim_contrato}
                                         disabled={true}
-                                        type="date"
+                                        type="text"
                                     />
                                 </Form.Group>
                             </Row>

@@ -41,7 +41,8 @@ export default function Evento({evento, sessionId}) {
     const [clientes, setClientes] = useState<Cliente[]>([]);
     const [selectedEvento, setSelectedEvento] = useState<Evento>(evento)
     const [validated, setValidated] = useState(false);
-
+    const [errorMessages, setErrorMessages] = useState({});
+    const [successMessage, setSuccessMessage] = useState('');
 
     useEffect(() => {
             const fetchLocalApi = async () => {
@@ -58,7 +59,7 @@ export default function Evento({evento, sessionId}) {
     );
 
     useEffect(() => {
-        if (selectedEvento.local === null && locais[0] !== undefined ) {
+        if (selectedEvento.local === null && locais[0] !== undefined) {
             setSelectedEvento(({...selectedEvento, local: locais[0].id_local}))
 
         }
@@ -66,20 +67,20 @@ export default function Evento({evento, sessionId}) {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        e.stopPropagation();
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!dateRegex.test(selectedEvento.data_inicio)) {
+            errors.data_inicio = 'Formato de data inválido. Use YYYY-MM-DD.';
+        }
         const form = e.currentTarget;
         if (form.checkValidity() === false) {
-            e.stopPropagation();
             setValidated(true);
         } else {
             setValidated(true);
-            await handleEventoSent();
+            await eventoPost(selectedEvento);
         }
     };
 
-
-    const handleEventoSent = async () => {
-        await eventoPost(selectedEvento)
-    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const {name, value} = e.target;
@@ -120,42 +121,43 @@ export default function Evento({evento, sessionId}) {
                             onChange={handleChange}
                             type="text"
                             placeholder="Nome"
+                            isInvalid={!!errorMessages.nome}
                         />
                         <Form.Control.Feedback type="invalid">
-                            Insira um nome!
+                            {errorMessages.nome}
                         </Form.Control.Feedback>
                     </Form.Group>
 
-                    <Form.Group as={Col} controlId="formGridCNPJ">
-                        <Form.Label>Codigo</Form.Label>
+                    <Form.Group as={Col} controlId="formGridCodigo">
+                        <Form.Label>Código</Form.Label>
                         <Form.Control
                             required
                             onChange={handleChange}
                             value={selectedEvento.codigo_evento}
                             name="codigo_evento"
                             type="number"
+                            min="1"
+                            isInvalid={!!errorMessages.codigo_evento}
                         />
                         <Form.Control.Feedback type="invalid">
-                            Insira um código!
+                            {errorMessages.codigo_evento}
                         </Form.Control.Feedback>
                     </Form.Group>
-
                 </Row>
+
                 <Row>
-                    <Form.Group as={Col} controlId="formGridNome">
-                        <Form.Label>Descricao</Form.Label>
+                    <Form.Group as={Col} controlId="formGridDescricao">
+                        <Form.Label>Descrição</Form.Label>
                         <Form.Control
-                            required
                             name="descricao"
                             value={selectedEvento.descricao}
                             onChange={handleChange}
                             as="textarea"
                         />
                     </Form.Group>
-                    <Form.Group as={Col} controlId="formGridNome">
+                    <Form.Group as={Col} controlId="formGridObservacao">
                         <Form.Label>Observações</Form.Label>
                         <Form.Control
-                            required
                             name="observacao"
                             value={selectedEvento.observacao}
                             onChange={handleChange}
@@ -163,100 +165,127 @@ export default function Evento({evento, sessionId}) {
                         />
                     </Form.Group>
                 </Row>
+
                 <Row>
-                    <Form.Group as={Col} controlId="formGriPrazoPagamento">
+                    <Form.Group as={Col} controlId="formGridLocal">
                         <Form.Label>Local</Form.Label>
                         <Form.Select
                             required
                             name="local"
                             value={selectedEvento.local}
-                            onChange={handleChange}>
+                            onChange={handleChange}
+                            isInvalid={!!errorMessages.local}
+                        >
+                            <option value="">Selecione um local</option>
                             {locais.map((local) => (
-                                <option key={local.id_local} value={local.id_local}>{local.nome}</option>
+                                <option key={local.id_local} value={local.id_local}>
+                                    {local.nome}
+                                </option>
                             ))}
-
                         </Form.Select>
+                        <Form.Control.Feedback type="invalid">
+                            {errorMessages.local}
+                        </Form.Control.Feedback>
                     </Form.Group>
-                    <Form.Group as={Col} controlId="formGridCNPJ">
-                        <Form.Label>Qtd.Pessoas</Form.Label>
+
+                    <Form.Group as={Col} controlId="formGridQtdPessoas">
+                        <Form.Label>Qtd. Pessoas</Form.Label>
                         <Form.Control
                             required
                             onChange={handleChange}
                             value={selectedEvento.qtd_pessoas}
                             name="qtd_pessoas"
                             type="number"
+                            min="1"
+                            isInvalid={!!errorMessages.qtd_pessoas}
                         />
                         <Form.Control.Feedback type="invalid">
-                            Insira um número!
+                            {errorMessages.qtd_pessoas}
                         </Form.Control.Feedback>
                     </Form.Group>
-
                 </Row>
+
                 <Row>
-                    <Form.Group as={Col} controlId="formGridEndereco">
-                        <Form.Label>Data de inicio</Form.Label>
+                    <Form.Group as={Col} controlId="formGridDataInicio">
+                        <Form.Label>Data de Início</Form.Label>
                         <Form.Control
+                            required
                             name="data_inicio"
-                            type='date'
+                            type="date"
                             onChange={handleChange}
                             value={selectedEvento.data_inicio}
+                            isInvalid={!!errorMessages.data_inicio}
                         />
+                        <Form.Control.Feedback type="invalid">
+                            {errorMessages.data_inicio}
+                        </Form.Control.Feedback>
                     </Form.Group>
-                    <Form.Group as={Col} controlId="formGridEndereco">
-                        <Form.Label>Data final</Form.Label>
+                    <Form.Group as={Col} controlId="formGridDataFim">
+                        <Form.Label>Data Final</Form.Label>
                         <Form.Control
                             required
                             name="data_fim"
                             value={selectedEvento.data_fim}
                             onChange={handleChange}
                             type="date"
+                            isInvalid={!!errorMessages.data_fim}
                         />
+                        <Form.Control.Feedback type="invalid">
+                            {errorMessages.data_fim}
+                        </Form.Control.Feedback>
                     </Form.Group>
-                    <Form.Group as={Col} controlId="formGridQtdMinima">
-                        <Form.Label>Tipo de Evento </Form.Label>
+                    <Form.Group as={Col} controlId="formGridTipoEvento">
+                        <Form.Label>Tipo de Evento</Form.Label>
                         <Form.Select
+                            required
                             name="tipo"
                             value={selectedEvento.tipo}
                             onChange={handleChange}
+                            isInvalid={!!errorMessages.tipo}
                         >
+                            <option value="">Selecione um tipo</option>
                             {TIPO_EVENTO.map((tipo, index) => (
                                 <option key={index} value={tipo}>
                                     {tipo}
                                 </option>
                             ))}
                         </Form.Select>
+                        <Form.Control.Feedback type="invalid">
+                            {errorMessages.tipo}
+                        </Form.Control.Feedback>
                     </Form.Group>
                 </Row>
-                <Form.Group as={Col} controlId="formGriPrazoPagamento">
+
+                <Form.Group controlId="formGridClientes">
                     <Form.Label>Clientes</Form.Label>
                     <Form.Select
-                        multiple={true}
+                        required
+                        multiple
                         name="clientes"
                         value={selectedEvento.clientes}
-                        onChange={handleChangeCliente}>
+                        onChange={handleChangeCliente}
+                        isInvalid={!!errorMessages.clientes}
+                    >
                         {clientes.map((cliente) => (
-                            <option key={cliente.id_cliente}
-                                    value={cliente.id_cliente}>{cliente.nome}--{cliente.cnpj}</option>
+                            <option key={cliente.id_cliente} value={cliente.id_cliente}>
+                                {cliente.nome} -- {cliente.cnpj}
+                            </option>
                         ))}
-
                     </Form.Select>
                     <Form.Control.Feedback type="invalid">
-                        Escolha ao menos um cliente!
+                        {errorMessages.clientes}
                     </Form.Control.Feedback>
                 </Form.Group>
 
-                <div className=" mt-3 d-flex justify-content-between w-100">
-                    <Button variant="secondary" onClick={handleBack}
-                            type="reset">
+                <div className="mt-3 d-flex justify-content-between w-100">
+                    <Button variant="secondary" onClick={handleBack} type="reset">
                         Retornar
                     </Button>
                     <Button variant="primary" type="submit">
                         {selectedEvento.id_evento === null ? 'Criar' : 'Editar'}
                     </Button>
                 </div>
-
-            </Form>
-        </div>
+            </Form></div>
 
     )
 }
