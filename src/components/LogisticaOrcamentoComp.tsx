@@ -175,15 +175,23 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
                     <Form.Label>Total R$ Logistica</Form.Label>
                     <Form.Control
                         type="text"
-                        value={`R$${valorLogisticaTotal ? valorLogisticaTotal : 0} | valor + alimentação(${logisticaCidade?.alimentacao}) * dias(${evento?.qtd_dias_evento})`}
+                        value={`R$${valorLogisticaTotal ? valorLogisticaTotal : 0}`}
                         disabled={true}
                     />
                     {logisticasSelecionadas.map((logistica) => (
                         <Fragment key={logistica.id_logistica}>
                             {(!logistica.in_sp && logistica.tipo === 'Pessoa') && (
                                 <Badge bg="secondary">
-                                    {logistica.nome}(Hospedagem:R${logisticaCidade?.hospedagem}, passagem:
+                                    {logistica.nome}(Diária:R${parseFloat((logistica?.valor)).toFixed(2)} + alimentação:
+                                    R${logisticaCidade.alimentacao || 70} * {evento.qtd_dias_evento} dias )
+                                    + (Hospedagem:R${logisticaCidade?.hospedagem} * {evento.qtd_dias_evento + 1} dias + passagem:
                                     R${logisticaCidade?.passagem})
+                                </Badge>
+                            )}
+                            {(logistica.in_sp && logistica.tipo === 'Pessoa') && (
+                                <Badge bg="secondary">
+                                    {logistica.nome}(Diária:R${parseFloat((logistica?.valor)).toFixed(2)} + alimentação:
+                                    R${logisticaCidade.alimentacao || 70} * {evento.qtd_dias_evento} dias )
                                 </Badge>
                             )}
                         </Fragment>

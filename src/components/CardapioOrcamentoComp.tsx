@@ -33,7 +33,7 @@ const CardapioOrcamentoComp: React.FC<Props> = ({
     const [valorComidaTotal, setValorComidaTotal] = useState(orcamento.valor_total_comidas | 0.0)
     const [selectCategoria, setSelectCategoria] = useState({tipo: '', subtipo: ''})
     const [showModal, setShowModal] = useState(false)
-    const [agrupadasPorTipo, setAgrupadasPorTipo] = useState([])
+const [agrupadasPorTipo, setAgrupadasPorTipo] = useState<{ [key: string]: ComidaType[] }>({});
     const filteredSubcategories = SUBCATEGORIAS_COMIDA[selectCategoria.tipo] || [];
     const filteredComidas = cardapio.filter(comida => comida.subtipo === selectCategoria.subtipo)
 
@@ -154,67 +154,69 @@ const CardapioOrcamentoComp: React.FC<Props> = ({
             <Row className='mb-3'>
                 <Form.Group as={Col} controlId="formGridComidasSelecionadas">
                     <Form.Label>Comidas Selecionadas</Form.Label>
-                    <div style={{display: 'flex', justifyContent: 'flex-start'}}>
-                        {Object.keys(agrupadasPorTipo).length === 0 ? (
-                            <div style={{
-                                maxHeight: '150px',
-                                overflowY: 'scroll',
-                                border: '1px solid #ced4da',
-                                padding: '10px'
-                            }}>
-                                <p>Nenhuma comida selecionada</p>
-                            </div>
-
-                        ) : (
-                            Object.keys(agrupadasPorTipo).map(tipo => (
-                                <div>
-                                    <div key={tipo} style={{flex: 1, margin: '0 10px'}}>
-                                        <h4>{tipo}</h4>
-                                        <div style={{
-                                            maxHeight: '150px',
-                                            overflowY: 'scroll',
-                                            border: '1px solid #ced4da',
-                                            padding: '10px'
-                                        }}>
-                                            {agrupadasPorTipo[tipo].map(comida => (
-                                                <div key={comida.comida_id}
-                                                     style={{
-                                                         display: 'flex',
-                                                         alignItems: 'center',
-                                                         marginBottom: '10px'
-                                                     }}>
-                                                    <Form.Check
-                                                        type="checkbox"
-                                                        label={`${comida.nome} - R$${comida.valor}`}
-                                                        checked={true}
-                                                        onChange={() => handleToggleComida(comida)}
-                                                    />
-                                                    <Form.Control
-                                                        type="number"
-                                                        min={comida.quantidade_minima}
-                                                        value={orcamento?.comidas?.find(c => c.comida_id === comida.comida_id)?.quantidade || comida.quantidade_minima}
-                                                        onChange={(e) => handleQuantityChange(comida.comida_id, parseInt(e.target.value))}
-                                                        style={{width: '75px', marginLeft: '5px'}}
-                                                    />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                    <Badge bg="primary" style={{flex: 1, margin: '0 10px'}}>
-                                        Total categoria:
-                                        R${(agrupadasPorTipo[tipo].reduce((total, comida) => {
-                                        const quantidade = orcamento?.comidas?.find(c => c.comida_id === comida.comida_id)?.quantidade || comida.quantidade_minima;
-                                        return total + (comida.valor * quantidade);
-                                    }, 0)).toFixed(2) || 0}
-                                    </Badge>
+                    <Row>
+                        {Object.keys(SUBCATEGORIAS_COMIDA).map((categoria) => (
+                            <Col xs={12} md={6} key={categoria} style={{marginBottom: '20px'}}>
+                                <h4>{categoria}</h4>
+                                <div
+                                    style={{
+                                        maxHeight: '150px',
+                                        overflowY: 'scroll',
+                                        border: '1px solid #ced4da',
+                                        padding: '10px',
+                                    }}
+                                >
+                                    {agrupadasPorTipo[categoria] && agrupadasPorTipo[categoria].length > 0 ? (
+                                        agrupadasPorTipo[categoria].map((comida) => (
+                                            <div
+                                                key={comida.comida_id}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    marginBottom: '10px',
+                                                }}
+                                            >
+                                                <Form.Check
+                                                    type="checkbox"
+                                                    label={`${comida.nome} - R$${comida.valor}`}
+                                                    checked={true}
+                                                    onChange={() => handleToggleComida(comida)}
+                                                />
+                                                <Form.Control
+                                                    type="number"
+                                                    min={comida.quantidade_minima}
+                                                    value={
+                                                        orcamento?.comidas?.find((c) => c.comida_id === comida.comida_id)
+                                                            ?.quantidade || comida.quantidade_minima
+                                                    }
+                                                    onChange={(e) =>
+                                                        handleQuantityChange(comida.comida_id, parseInt(e.target.value))
+                                                    }
+                                                    style={{width: '75px', marginLeft: '5px'}}
+                                                />
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p>Nenhuma comida selecionada nesta categoria.</p>
+                                    )}
                                 </div>
-
-                            ))
-                        )}
-                    </div>
-
+                                <Badge bg="primary" style={{marginTop: '10px'}}>
+                                    Total categoria: R$
+                                    {(
+                                        agrupadasPorTipo[categoria] && agrupadasPorTipo[categoria].length > 0
+                                            ? agrupadasPorTipo[categoria].reduce((total, comida) => {
+                                                const quantidade =
+                                                    orcamento?.comidas?.find((c) => c.comida_id === comida.comida_id)
+                                                        ?.quantidade || comida.quantidade_minima;
+                                                return total + comida.valor * quantidade;
+                                            }, 0)
+                                            : 0
+                                    ).toFixed(2)}
+                                </Badge>
+                            </Col>
+                        ))}
+                    </Row>
                 </Form.Group>
-
             </Row>
             <Row className='mb-3'>
                 <Form.Group as={Col} controlId="formGridNome">
