@@ -3,11 +3,18 @@ import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
 import Modal from "react-bootstrap/Modal";
 import {useEffect} from "react";
-import {Accordion, Button, OverlayTrigger, Tooltip} from 'react-bootstrap';
+import {Accordion, Badge, Button, OverlayTrigger, Tooltip} from 'react-bootstrap';
 import {faCheck,} from "@fortawesome/free-solid-svg-icons";
 import {orcamentoPost,} from '../ApiCall/ApiCall.jsx'
 
-import {ComidaType, EventoType, LogisticaCidadeType, LogisticaType, OrcamentoType} from "../types";
+import {
+    CardapioOrcamentoType,
+    ComidaType,
+    EventoType,
+    LogisticaCidadeType,
+    LogisticaType,
+    OrcamentoType
+} from "../types";
 // @ts-ignore
 import verificarLogistica from "../util/CalculoOrcamento.ts";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -42,24 +49,60 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
     const locomocao = verificarLogistica(cardapioSelecionado, logisticaCidade).locomocao * dias_evento
 
     useEffect(() => {
-        const valor_cardapio = parseFloat(orcamento.valor_total_comidas + (orcamento.valor_total_comidas * logisticaCidade?.taxa_deslocamento)) || 0
-        const total_logisticas = parseFloat(orcamento.valor_total_logisticas) | 0
-        const decoracaoCompleta = cardapioSelecionado.some(cardapio => cardapio.tipo === 'Intervalo_Doce' || cardapio.tipo === 'Intervalo_Salgado' ||
-            cardapio.tipo === 'Almoço')
-        const adicional_decoracao = decoracaoCompleta ? 800 : 400
-        var total = valor_cardapio + total_logisticas + adicional_decoracao + parseFloat(frete) + parseFloat(locomocao)
-        const valor_imposto = total * 0.2
-        total += valor_imposto
-        total += (total * orcamento.cliente.taxa_financeira)
+        const calcularValorCardapio = () => {
+            return orcamento.comidas.reduce((acc: number, comida: CardapioOrcamentoType): number => {
+                return acc + (comida.valor * comida.quantidade);
+            }, 0);
+        };
+
+        // Função para calcular o total de descontos
+        const calcularDescontosTotal = () => {
+            return Object.values(orcamento.descontos).reduce((acc: number, desconto: number): number => {
+                return acc + desconto;
+            }, 0);
+        };
+
+        // Função para calcular o valor do cardápio com descontos e taxa de deslocamento
+        const calcularValorCardapioTotal = (valorCardapio: number, descontosTotal: number) => {
+            const valorComDescontos = valorCardapio - descontosTotal;
+            return valorComDescontos + (valorComDescontos * (logisticaCidade?.taxa_deslocamento || 0));
+        };
+
+        // Função para verificar e calcular o valor de decoração
+        const calcularDecoracao = () => {
+            const decoracaoCompleta = cardapioSelecionado.some(cardapio =>
+                cardapio.tipo === 'Intervalo_Doce' || cardapio.tipo === 'Intervalo_Salgado' || cardapio.tipo === 'Almoço'
+            );
+            return decoracaoCompleta ? 800 : 400;
+        };
+
+        // Função para calcular o valor do imposto
+        const calcularImposto = (valorBase: number) => {
+            return valorBase * 0.2;
+        };
+
+        // Calculando valores parciais
+        const valorCardapio = calcularValorCardapio();
+        const descontosTotal = calcularDescontosTotal();
+        const valorCardapioTotal = calcularValorCardapioTotal(valorCardapio, descontosTotal);
+        const totalLogisticas = parseFloat(orcamento.valor_total_logisticas) || 0;
+        const adicionalDecoracao = calcularDecoracao();
+
+        // Calculo do total com todas as despesas, descontos e adicionais
+        let total = valorCardapioTotal + totalLogisticas + adicionalDecoracao + parseFloat(frete) + parseFloat(locomocao);
+        const valorImposto = calcularImposto(total);
+        total += valorImposto;
+        total += total * (orcamento.cliente.taxa_financeira || 0);
         setOrcamento({
             ...orcamento,
-            valor_total: total,
-            valor_total_comidas: valor_cardapio,
-            valor_imposto: valor_imposto,
-            valor_decoracao: adicional_decoracao,
+            valor_total: total.toFixed(2),
+            valor_total_comidas: valorCardapioTotal,
+            valor_imposto: valorImposto,
+            valor_decoracao: adicionalDecoracao,
             evento: evento
-        })
+        });
     }, []);
+
 
     const renderTooltipDiaria = (props) => (
         <Tooltip id="button-tooltip" {...props} style={{
@@ -216,55 +259,92 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
                         </Row>
                         <Row>
                             <Accordion>
-                                <Accordion.Item as={'p'} eventKey="0" className='mt-3'>
-                                    <Accordion.Header as={'h5'}>Comidas:
-                                        R${orcamento.valor_total_comidas | 0} ({logisticaCidade?.taxa_deslocamento * 100 || 0}%
-                                        taxa de
-                                        deslocamento incluso)</Accordion.Header>
-                                    <Accordion.Body style={{backgroundColor: '##aab0b5;'}}>
-                                        {orcamento.comidas.map(comida => (
-                                            <p>{comida.comida} (Qtd: {comida.quantidade}, valor:
-                                                R${parseFloat(comida.valor).toFixed(2)})</p>
-                                        ))}
-                                    </Accordion.Body>
-                                </Accordion.Item>
-                                <Accordion.Item as={'p'} eventKey="1" className='mt-3'>
-                                    <Accordion.Header
-                                        as={'h5'}>Logisticas:
-                                        R${orcamento.valor_total_logisticas | 0}</Accordion.Header>
-                                    <Accordion.Body style={{backgroundColor: '##aab0b5;'}}>
-                                        {orcamento.logisticas.map(logistica => (
-                                            <p>{logistica.logistica} (Qtd: {logistica.quantidade},
-                                                Diária: {parseFloat(logistica.valor).toFixed(2)})</p>
-                                        ))}
-                                    </Accordion.Body>
-                                </Accordion.Item>
-                                <Accordion.Item as={'p'} eventKey="2" className='mt-3'>
-                                    <Accordion.Header style={{backgroundColor: '#aab0b5', color: 'white'}}
-                                                      as={'h5'}>Evento</Accordion.Header>
+                                <Accordion.Item eventKey="0">
+                                    <Accordion.Header>
+                                        Comidas: R${orcamento.valor_total_comidas.toFixed(2)}
+                                        <Badge bg="info" className="ms-2">
+                                            ({(logisticaCidade?.taxa_deslocamento * 100 || 0).toFixed(0)}% taxa de
+                                            deslocamento)
+                                        </Badge>
+                                    </Accordion.Header>
                                     <Accordion.Body>
-                                        <p>Nome/Coodigo: {evento.nome}-{evento.codigo_evento}</p>
-                                        <p>Data: {evento.data_inicio} | {evento.data_fim}</p>
-                                        <p>Dias: {evento.qtd_dias_evento} </p>
-                                        <p>Descrição: {evento.descricao} </p>
+                                        {orcamento.comidas.map((comida, index) => (
+                                            <Row key={index} className="mb-2">
+                                                <Col>
+                                                    <strong>{comida.comida}</strong> - Qtd: {comida.quantidade},
+                                                    Valor Unitário: R${parseFloat(comida.valor).toFixed(2)}
+                                                </Col>
+                                            </Row>
+                                        ))}
+                                        <p>Desconto aplicado:
+                                            R${parseFloat(orcamento.valor_desconto_comidas).toFixed(2)}</p>
                                     </Accordion.Body>
                                 </Accordion.Item>
-                                <Accordion.Item as={'p'} eventKey="3" className='mt-3'>
-                                    <Accordion.Header style={{backgroundColor: '#aab0b5', color: 'white'}}
-                                                      as={'h5'}>Cliente</Accordion.Header>
+
+                                {/* Seção de Logísticas */}
+                                <Accordion.Item eventKey="1">
+                                    <Accordion.Header>
+                                        Logísticas: R${parseFloat(orcamento.valor_total_logisticas).toFixed(2)}
+                                    </Accordion.Header>
+                                    <Accordion.Body>
+                                        {orcamento.logisticas.map((logistica, index) => (
+                                            <Row key={index} className="mb-2">
+                                                <Col>
+                                                    <strong>{logistica.logistica}</strong> - Qtd: {logistica.quantidade},
+                                                    Diária: R${parseFloat(logistica.valor).toFixed(2)}
+                                                </Col>
+                                            </Row>
+                                        ))}
+                                        <p>Desconto aplicado:
+                                            R${parseFloat(orcamento.valor_desconto_logisticas).toFixed(2)}</p>
+                                    </Accordion.Body>
+                                </Accordion.Item>
+
+                                {/* Seção do Evento */}
+                                <Accordion.Item eventKey="2">
+                                    <Accordion.Header>Detalhes do Evento</Accordion.Header>
+                                    <Accordion.Body>
+                                        <p>Nome/Código: {evento.nome} - {evento.codigo_evento}</p>
+                                        <p>Data: {evento.data_inicio} - {evento.data_fim}</p>
+                                        <p>Duração: {evento.qtd_dias_evento} dias</p>
+                                        <p>Descrição: {evento.descricao}</p>
+                                    </Accordion.Body>
+                                </Accordion.Item>
+
+                                {/* Seção do Cliente */}
+                                <Accordion.Item eventKey="3">
+                                    <Accordion.Header>Detalhes do Cliente</Accordion.Header>
                                     <Accordion.Body>
                                         <p>Nome: {orcamento.cliente.nome}</p>
-                                        <p>Taxa Financeira: {orcamento.cliente.taxa_financeira * 100}% </p>
-                                        <p>CNPJ: {orcamento.cliente.cnpj} </p>
+                                        <p>Taxa Financeira: {(orcamento.cliente.taxa_financeira * 100).toFixed(2)}%</p>
+                                        <p>CNPJ: {orcamento.cliente.cnpj}</p>
+                                    </Accordion.Body>
+                                </Accordion.Item>
+
+                                {/* Resumo Final */}
+                                <Accordion.Item eventKey="4">
+                                    <Accordion.Header>Total Geral</Accordion.Header>
+                                    <Accordion.Body>
+                                        <p><strong>Total Comidas:</strong> R${orcamento.valor_total_comidas.toFixed(2)}
+                                        </p>
+                                        <p><strong>Total
+                                            Logísticas:</strong> R${parseFloat(orcamento.valor_total_logisticas).toFixed(2)}
+                                        </p>
+                                        <p>
+                                            <strong>Decoração:</strong> R${parseFloat(orcamento.valor_decoracao).toFixed(2)}
+                                        </p>
+                                        <p><strong>Imposto:</strong> R${parseFloat(orcamento.valor_imposto).toFixed(2)}
+                                        </p>
+                                        <p><strong>Total
+                                            Orçamento:</strong> R${parseFloat(orcamento.valor_total).toFixed(2)}</p>
                                     </Accordion.Body>
                                 </Accordion.Item>
                             </Accordion>
-                        </Row>
-                        <Row>
-                            <p>
-                                <strong>Total: R$ { (parseFloat(orcamento.valor_total) || 0).toFixed(2) }</strong>
-                            </p>
-                        </Row>
+                        </Row> <Row>
+                        <p>
+                            <strong>Total: R$ {(parseFloat(orcamento.valor_total) || 0).toFixed(2)}</strong>
+                        </p>
+                    </Row>
                         <Button className={'mt-3'} variant="primary" type="submit" onClick={handleSubmit}>
                             {orcamento !== null && orcamento.id_orcamento === null ? 'Criar' : 'Editar'}
                         </Button>

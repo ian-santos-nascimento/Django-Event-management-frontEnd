@@ -110,12 +110,6 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
         }
     };
 
-    const handleModalSave = () => {
-        if (selectedLogistica) {
-            handleToggleLogistica({...selectedLogistica});
-        }
-        setShowModal(false);
-    };
 
     return (
         <>
@@ -183,15 +177,15 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
                             {(!logistica.in_sp && logistica.tipo === 'Pessoa') && (
                                 <Badge bg="secondary">
                                     {logistica.nome}(Diária:R${parseFloat((logistica?.valor)).toFixed(2)} + alimentação:
-                                    R${logisticaCidade.alimentacao || 70} * {evento.qtd_dias_evento} dias )
-                                    + (Hospedagem:R${logisticaCidade?.hospedagem} * {evento.qtd_dias_evento + 1} dias + passagem:
+                                    R${logisticaCidade?.alimentacao || 70} * {evento?.qtd_dias_evento} dias )
+                                    + (Hospedagem:R${logisticaCidade?.hospedagem} * {evento?.qtd_dias_evento + 1} dias + passagem:
                                     R${logisticaCidade?.passagem})
                                 </Badge>
                             )}
                             {(logistica.in_sp && logistica.tipo === 'Pessoa') && (
                                 <Badge bg="secondary">
                                     {logistica.nome}(Diária:R${parseFloat((logistica?.valor)).toFixed(2)} + alimentação:
-                                    R${logisticaCidade.alimentacao || 70} * {evento.qtd_dias_evento} dias )
+                                    R${logisticaCidade?.alimentacao || 70} * {evento?.qtd_dias_evento} dias )
                                 </Badge>
                             )}
                         </Fragment>

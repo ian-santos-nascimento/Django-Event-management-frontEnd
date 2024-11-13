@@ -33,35 +33,67 @@ const CardapioOrcamentoComp: React.FC<Props> = ({
     const [valorComidaTotal, setValorComidaTotal] = useState(orcamento.valor_total_comidas | 0.0)
     const [selectCategoria, setSelectCategoria] = useState({tipo: '', subtipo: ''})
     const [showModal, setShowModal] = useState(false)
-const [agrupadasPorTipo, setAgrupadasPorTipo] = useState<{ [key: string]: ComidaType[] }>({});
+    const [agrupadasPorTipo, setAgrupadasPorTipo] = useState<{ [key: string]: ComidaType[] }>({});
     const filteredSubcategories = SUBCATEGORIAS_COMIDA[selectCategoria.tipo] || [];
     const filteredComidas = cardapio.filter(comida => comida.subtipo === selectCategoria.subtipo)
+    const [descontosPorCategoria, setDescontosPorCategoria] = useState(orcamento?.descontos);
+
+    const handleDiscountChange = (categoria, value) => {
+        setDescontosPorCategoria((prevDescontos) => ({
+            ...prevDescontos,
+            [categoria]: value
+        }));
+
+    };
 
 
     useEffect(() => {
-        if (orcamento && orcamento.comidas) {
-            var total = selectedCardapio.reduce((acc, comida) => {
-                const quantidade = orcamento?.comidas.find(c => c.comida_id === comida.comida_id)?.quantidade || comida.quantidade_minima;
-                return (acc + comida.valor * quantidade);
-            }, 0) - orcamento.valor_desconto_comidas;
-            setValorComidaTotal(total);
-            setOrcamento({...orcamento, valor_total_comidas: total})
-        }
         setAgrupadasPorTipo(agruparComidasPorTipo(selectedCardapio));
-    }, [orcamento.comidas, orcamento.valor_desconto_comidas, selectedCardapio]);
-
-    const handleQuantityChange = (comida_id: number, quantidade: number) => {
-        if (!orcamento || !orcamento.comidas) {
-            return orcamento;
+        if (orcamento && orcamento.comidas) {
+            const totalDesconto = Object.values(descontosPorCategoria).reduce((acc, desconto) => acc + desconto, 0);
+            // Calcula o total de comidas por categoria, aplicando o desconto apenas uma vez por categoria
+            const totalComDescontos = Object.keys(agrupadasPorTipo).reduce((acc, categoria) => {
+                const subtotalCategoria = agrupadasPorTipo[categoria].reduce((sum, comida) => {
+                    const quantidade = orcamento.comidas.find(c => c.comida_id === comida.comida_id)?.quantidade || comida.quantidade_minima;
+                    return sum + comida.valor * quantidade;
+                }, 0);
+                const descontoCategoria = descontosPorCategoria[categoria] || 0;
+                return acc + (subtotalCategoria - descontoCategoria);
+            }, 0);
+            console.log("ORCAMENTO", orcamento, "agrupados", agrupadasPorTipo)
+            setValorComidaTotal(totalComDescontos);
+            setOrcamento({
+                ...orcamento,
+                descontos: descontosPorCategoria !== null ? descontosPorCategoria : {}, // Garante que o campo é atualizado no orçamento
+                valor_total_comidas: totalComDescontos,
+                valor_desconto_comidas: totalDesconto
+            });
         }
-        setOrcamento(prevOrcamento => {
-            const updatedComidas = prevOrcamento.comidas.map(comida =>
-                comida.comida_id === comida_id ? {...comida, id: comida_id, quantidade: quantidade} : comida
-            );
-            return {...prevOrcamento, comidas: updatedComidas};
-        });
+    }, [orcamento.comidas, descontosPorCategoria, selectedCardapio]);
 
+    const handleQuantityChange = (comida_id, quantidade) => {
+        if (!orcamento || !orcamento.comidas) {
+            return;
+        }
+
+        const updatedComidas = orcamento.comidas.map(comida =>
+            comida.comida_id === comida_id ? {...comida, quantidade: quantidade} : comida
+        );
+
+        const totalComDescontos = updatedComidas.reduce((acc, comida) => {
+            const descontoCategoria = descontosPorCategoria[comida.tipo] || 0;
+            return acc + (comida.valor * comida.quantidade) - descontoCategoria;
+        }, 0);
+
+        setOrcamento(prevOrcamento => ({
+            ...prevOrcamento,
+            comidas: updatedComidas,
+            valor_total_comidas: totalComDescontos
+        }));
+
+        setValorComidaTotal(totalComDescontos);
     };
+
 
     const handleCategoryChange = (e) => {
         const {value} = e.target;
@@ -100,16 +132,6 @@ const [agrupadasPorTipo, setAgrupadasPorTipo] = useState<{ [key: string]: Comida
             }
         }
     };
-
-    const handleChange = (e: { target: { name: string; value: any } }) => {
-        const {name, value} = e.target;
-
-        setOrcamento(prevOrcamento => ({
-            ...prevOrcamento,
-            [name]: value
-        }));
-    };
-
 
     return (
         <div>
@@ -151,9 +173,8 @@ const [agrupadasPorTipo, setAgrupadasPorTipo] = useState<{ [key: string]: Comida
                 </Form.Group>
 
             </Row>
-            <Row className='mb-3'>
+            <Row className="mb-3 mt-3">
                 <Form.Group as={Col} controlId="formGridComidasSelecionadas">
-                    <Form.Label>Comidas Selecionadas</Form.Label>
                     <Row>
                         {Object.keys(SUBCATEGORIAS_COMIDA).map((categoria) => (
                             <Col xs={12} md={6} key={categoria} style={{marginBottom: '20px'}}>
@@ -213,37 +234,40 @@ const [agrupadasPorTipo, setAgrupadasPorTipo] = useState<{ [key: string]: Comida
                                             : 0
                                     ).toFixed(2)}
                                 </Badge>
+                                <div>
+                                    <Form.Label>Desconto para {categoria}</Form.Label>
+                                    <NumericFormat
+                                        name={`desconto_${categoria}`}
+                                        disabled={agrupadasPorTipo[categoria]?.length <= 0}
+                                        value={orcamento?.descontos?.[categoria] ?? descontosPorCategoria[categoria] ?? 0}
+                                        onValueChange={(values) => {
+                                            const {floatValue} = values;
+                                            handleDiscountChange(categoria, floatValue || 0);
+                                        }}
+                                        thousandSeparator="."
+                                        decimalSeparator=","
+                                        prefix="R$ "
+                                        decimalScale={2}
+                                        fixedDecimalScale={true}
+                                        allowNegative={false}
+                                        placeholder="Desconto Categoria"
+                                        customInput={Form.Control}
+                                    />
+                                </div>
+
                             </Col>
                         ))}
                     </Row>
                 </Form.Group>
             </Row>
+
             <Row className='mb-3'>
                 <Form.Group as={Col} controlId="formGridNome">
                     <Form.Label>Total R$ comidas</Form.Label>
                     <Form.Control
                         type="text"
-                        value={`R$${valorComidaTotal.toFixed(2) || 0}`}
+                        value={`R$${(parseFloat(orcamento.valor_total_comidas).toFixed(2) || valorComidaTotal.toFixed(2)) || 0}`}
                         disabled={true}
-                    />
-                </Form.Group>
-                <Form.Group as={Col} controlId="formGridNome">
-                    <Form.Label>Desconto para Cardápio</Form.Label>
-                    <NumericFormat
-                        name="desconto_total_comidas"
-                        value={orcamento.valor_desconto_comidas}
-                        onValueChange={(values) => {
-                            const {floatValue} = values;
-                            handleChange({target: {name: 'valor_desconto_comidas', value: floatValue || 0}});
-                        }}
-                        thousandSeparator="."
-                        decimalSeparator=","
-                        prefix="R$ "
-                        decimalScale={2}
-                        fixedDecimalScale={true}
-                        allowNegative={false}
-                        placeholder="Desconto Comida"
-                        customInput={Form.Control}
                     />
                 </Form.Group>
             </Row>

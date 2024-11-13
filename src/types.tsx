@@ -56,7 +56,9 @@ export interface OrcamentoType {
     valor_desconto_logisticas: number,
     valor_desconto_comidas: number,
     valor_imposto: number,
-    valor_decoracao: number
+    valor_decoracao: number,
+    descontos: { [categoria: string]: number };
+
 }
 
 export interface CardapioOrcamentoType {

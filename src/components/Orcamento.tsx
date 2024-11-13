@@ -30,7 +30,8 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
             valor_total_comidas: 0,
             valor_desconto_comidas: 0,
             valor_total_logisticas: 0,
-            valor_imposto: 0
+            valor_imposto: 0,
+            descontos: {}
         })
     const [comidas, setComidas] = useState<ComidaType[]>([])
     const [comidasSelecionadas, setComidasSelecionadas] = useState<ComidaType[]>([]);
@@ -49,6 +50,14 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
         getModels();
     }, []);
 
+    if (orcamento && !orcamento.descontos) {
+        console.log("ORCAMENTO SEM DESCONTO", orcamento)
+        setOrcamento(prevOrcamento => ({
+            ...prevOrcamento,
+            descontos: {} // Inicializa como objeto vazio
+        }));
+    }
+
     //Mapea as comidas já selecionadas quando o Orçamento é editado
     useEffect(() => {
         if (orcamento.comidas && comidas.length > 0) {
@@ -66,7 +75,7 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
             setComidasSelecionadas(comidasSelecionadasTemp);
         }
     }, [orcamento.comidas, comidas])
-    //Mapea as Logisticas já selecionadas quando o Orçamento é editado
+
     useEffect(() => {
         if (orcamento.logisticas && logisticas.length > 0) {
             const logisticaSelecionadaTemp = orcamento.logisticas.map(logisticaOrcamento => {

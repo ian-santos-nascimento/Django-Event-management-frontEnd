@@ -126,8 +126,9 @@ export const eventoPost = async (evento) => {
 
 export const orcamentoPost = async (orcamento) => {
     try {
-        await axiosInstance.post(`orcamentos-create/`, orcamento);
-        alert('Evento criado com sucesso!');
+        const payload = transformOrcamentoInPayload(orcamento)
+        await axiosInstance.post(`orcamentos-create/`, JSON.stringify(payload))
+        alert('Orçamento criado com sucesso!');
         window.location.reload();
     } catch (error) {
         if (error.response) {
@@ -151,3 +152,33 @@ export const orcamentoPost = async (orcamento) => {
     return {success: false, data: null};
 }
 
+const transformOrcamentoInPayload = (orcamento) => {
+    return {
+        id_orcamento: orcamento.id_orcamento,
+        nome: orcamento.nome,
+        observacoes: orcamento.observacoes,
+        status: orcamento.status,
+        valor_total: orcamento.valor_total,
+        valor_total_comidas: orcamento.valor_total_comidas,
+        valor_total_logisticas: orcamento.valor_total_logisticas,
+        valor_desconto_comidas: orcamento.valor_desconto_comidas,
+        valor_desconto_logisticas: orcamento.valor_desconto_logisticas,
+        valor_imposto: orcamento.valor_imposto,
+        valor_decoracao: orcamento.valor_decoracao,
+        cliente: orcamento.cliente.id_cliente,
+        evento: orcamento.evento.id_evento,
+        comidas_orcamento: orcamento.comidas.map(comida => ({
+            comida_id: comida.comida_id,
+            quantidade: comida.quantidade,
+            valor: comida.valor,
+            comida: comida.comida
+        })),
+        logisticas_orcamento: orcamento.logisticas.map(logistica => ({
+            id: logistica.id,
+            quantidade: logistica.quantidade,
+            valor: logistica.valor,
+            logistica: logistica.logistica
+        })),
+        descontos: orcamento.descontos
+    };
+}

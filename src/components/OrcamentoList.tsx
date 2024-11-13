@@ -188,36 +188,36 @@ export default function OrcamentoList({sessionId}) {
                     <Modal.Title>Escolha o Evento</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                        <div>
-                            <Row className="mb-3">
-                                <Form.Group as={Col} controlId="formGridNome">
-                                    <Form.Label>Evento</Form.Label>
-                                    <Form.Select
-                                        name="nome"
-                                        value={selectedEvento?.id_evento}
-                                        onChange={handleSelectEvento}
-                                    >
-                                        {eventos.map((evento) => (
-                                            <option key={evento.id_evento} value={evento.id_evento}>
-                                                {evento.nome}--{evento.codigo_evento}
-                                            </option>
-                                        ))}
-                                    </Form.Select>
-                                </Form.Group>
+                    <div>
+                        <Row className="mb-3">
+                            <Form.Group as={Col} controlId="formGridNome">
+                                <Form.Label>Evento</Form.Label>
+                                <Form.Select
+                                    name="nome"
+                                    value={selectedEvento?.id_evento}
+                                    onChange={handleSelectEvento}
+                                >
+                                    {eventos.map((evento) => (
+                                        <option key={evento.id_evento} value={evento.id_evento}>
+                                            {evento.nome}--{evento.codigo_evento}
+                                        </option>
+                                    ))}
+                                </Form.Select>
+                            </Form.Group>
 
-                            </Row>
-                            <Modal.Footer className="modal-footer-custom">
-                                <div className="d-flex w-100">
-                                    <Button
-                                        variant="primary"
-                                        onClick={handleSelectEventoButton}>
-                                        Selecionar
-                                    </Button>
+                        </Row>
+                        <Modal.Footer className="modal-footer-custom p-0">
+                            <div className="d-flex w-100 p-0">
+                                <Button
+                                    variant="primary"
+                                    onClick={handleSelectEventoButton}>
+                                    Selecionar
+                                </Button>
 
-                                </div>
+                            </div>
 
-                            </Modal.Footer>
-                        </div>
+                        </Modal.Footer>
+                    </div>
                 </Modal.Body>
 
             </Modal>
