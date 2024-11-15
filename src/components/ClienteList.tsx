@@ -84,7 +84,7 @@ export default function CidadeList({sessionId, csrfToken}) {
             },
             inicio_contrato: '',
             fim_contrato: '',
-            taxa_financeira: 0.03
+            taxa_financeira: 0.00
         });
     };
 

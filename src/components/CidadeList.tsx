@@ -237,7 +237,7 @@ export default function CidadeList({sessionId}) {
                             Excluir
                         </Button>
                         <Button variant="primary" type="submit" onClick={handleSubmit}>
-                            {selectedCidade !== null && selectedCidade.id_cidade === null ? 'Criar' : 'Editar'}
+                            {selectedCidade !== null && selectedCidade.id_cidade === null ? 'Salvar' : 'Editar'}
                         </Button>
                     </div>
                 </Modal.Footer>

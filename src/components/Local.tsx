@@ -221,7 +221,7 @@ export default function Local({local, sessionId}) {
                         </Button>
                     )}
                     <Button variant="primary" type="submit">
-                        {local.id_local === null ? 'Criar' : 'Editar'}
+                        {local.id_local === null ? 'Salvar' : 'Editar'}
                     </Button>
                 </div>
             </Form></div>

@@ -1,7 +1,8 @@
 export interface EventoType {
     id_evento: number,
-    codigo_evento: number,
+    codigo_evento: string,
     nome: string,
+    tipo: string,
     descricao: string,
     observacao: string,
     qtd_dias_evento: number,

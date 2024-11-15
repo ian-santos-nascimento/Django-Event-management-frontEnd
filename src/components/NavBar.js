@@ -39,7 +39,7 @@ export default function NavBar({setAuthenticated, isAuthenticated}) {
                         navbarScroll
                     >
                         <Nav.Link>
-                            <Link className="nav-link" to="/">Home</Link>
+                            <Link className="nav-link" to="/">Eventos</Link>
                         </Nav.Link>
                         <Nav.Link>
                             <Link className="nav-link" to="/locais">Locais</Link>

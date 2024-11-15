@@ -39,10 +39,10 @@ interface Cliente {
 export default function Evento({evento, sessionId}) {
     const [locais, setLocais] = useState<Local[]>([]);
     const [clientes, setClientes] = useState<Cliente[]>([]);
+    const [filterCliente, setFilterCliente] = useState(''); // Estado para o filtro de clientes
     const [selectedEvento, setSelectedEvento] = useState<Evento>(evento)
     const [validated, setValidated] = useState(false);
     const [errorMessages, setErrorMessages] = useState({});
-    const [successMessage, setSuccessMessage] = useState('');
 
     useEffect(() => {
             const fetchLocalApi = async () => {
@@ -64,6 +64,20 @@ export default function Evento({evento, sessionId}) {
 
         }
     }, [locais]);
+
+    const handleCodigoChange = (e) => {
+        let value = e.target.value.replace(/\D/g, ''); // Remove qualquer caractere que não seja dígito
+        if (value.length > 8) value = value.slice(0, 8); // Limita o valor a 8 dígitos
+
+        if (value.length >= 5) {
+            value = `${value.slice(0, 2)}.${value.slice(2, 4)}.${value.slice(4)}`;
+        } else if (value.length >= 3) {
+            value = `${value.slice(0, 2)}.${value.slice(2)}`;
+        }
+
+        e.target.value = value; // Atualiza o valor no campo de entrada
+        handleChange(e); // Chama a função de mudança original
+    };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -87,20 +101,20 @@ export default function Evento({evento, sessionId}) {
         setSelectedEvento((prevEvento) => prevEvento ? {...prevEvento, [name]: value} : null);
     };
 
-    const handleChangeCliente = (e) => {
-        const options = e.target.options;
-        const selectedClientes: number[] = []
-        for (let i = 0; i < options.length; i++) {
-            if (options[i].selected) {
-                selectedClientes.push(Number(options[i].value));
-            }
-        }
+    const handleToggleCliente = (clienteId) => {
+        const selectedClientes = selectedEvento?.clientes.includes(clienteId)
+            ? selectedEvento.clientes.filter(id => id !== clienteId) // Remove se já estiver selecionado
+            : [...selectedEvento.clientes, clienteId]; // Adiciona o cliente
+
         setSelectedEvento({
             ...selectedEvento,
             clientes: selectedClientes
         });
+    };
 
-    }
+    const filteredClientes = clientes.filter(cliente =>
+        cliente.nome.toLowerCase().includes(filterCliente.toLowerCase())
+    );
 
 
     const handleBack = () => {
@@ -120,7 +134,6 @@ export default function Evento({evento, sessionId}) {
                             value={selectedEvento.nome}
                             onChange={handleChange}
                             type="text"
-                            placeholder="Nome"
                             isInvalid={!!errorMessages.nome}
                         />
                         <Form.Control.Feedback type="invalid">
@@ -132,11 +145,10 @@ export default function Evento({evento, sessionId}) {
                         <Form.Label>Código</Form.Label>
                         <Form.Control
                             required
-                            onChange={handleChange}
+                            onChange={handleCodigoChange}
                             value={selectedEvento.codigo_evento}
                             name="codigo_evento"
-                            type="number"
-                            min="1"
+                            type="text"
                             isInvalid={!!errorMessages.codigo_evento}
                         />
                         <Form.Control.Feedback type="invalid">
@@ -258,20 +270,32 @@ export default function Evento({evento, sessionId}) {
 
                 <Form.Group controlId="formGridClientes">
                     <Form.Label>Clientes</Form.Label>
-                    <Form.Select
-                        required
-                        multiple
-                        name="clientes"
-                        value={selectedEvento.clientes}
-                        onChange={handleChangeCliente}
-                        isInvalid={!!errorMessages.clientes}
+                    <Form.Control
+                        type="text"
+                        placeholder="Buscar Cliente..."
+                        value={filterCliente}
+                        onChange={(e) => setFilterCliente(e.target.value)}
+                        style={{marginBottom: '10px'}}
+                    />
+                    <div
+                        style={{
+                            maxHeight: '150px',
+                            overflowY: 'scroll',
+                            border: '1px solid #ced4da',
+                            padding: '10px'
+                        }}
                     >
-                        {clientes.map((cliente) => (
-                            <option key={cliente.id_cliente} value={cliente.id_cliente}>
-                                {cliente.nome} -- {cliente.cnpj}
-                            </option>
+                        {filteredClientes.map((cliente) => (
+                            <Form.Check
+                                key={cliente.id_cliente}
+                                type="checkbox"
+                                label={`${cliente.nome} -- ${cliente.cnpj}`}
+                                value={cliente.id_cliente}
+                                checked={selectedEvento?.clientes.includes(cliente.id_cliente)}
+                                onChange={() => handleToggleCliente(cliente.id_cliente)}
+                            />
                         ))}
-                    </Form.Select>
+                    </div>
                     <Form.Control.Feedback type="invalid">
                         {errorMessages.clientes}
                     </Form.Control.Feedback>
@@ -282,7 +306,7 @@ export default function Evento({evento, sessionId}) {
                         Retornar
                     </Button>
                     <Button variant="primary" type="submit">
-                        {selectedEvento.id_evento === null ? 'Criar' : 'Editar'}
+                        {selectedEvento.id_evento === null ? 'Salvar' : 'Editar'}
                     </Button>
                 </div>
             </Form></div>

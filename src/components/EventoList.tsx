@@ -11,27 +11,12 @@ import {deleteData, fetchData} from "../ApiCall/ApiCall";
 import {InputGroup} from "react-bootstrap";
 import {faSearch, faTimes} from "@fortawesome/free-solid-svg-icons";
 import {TIPO_EVENTO} from "../util/OptionList"
-
-interface Evento {
-    id_evento: number,
-    codigo_evento: number,
-    nome: string,
-    tipo: string,
-    descricao: string,
-    observacao: string,
-    qtd_dias_evento: number,
-    qtd_pessoas: number,
-    data_inicio: string,
-    data_fim: string,
-    local: number,
-    clientes: number[]
-
-}
+import {EventoType} from "../types";
 
 
 export default function EventoList({sessionId}) {
-    const [eventos, setEventos] = useState<Evento[]>([])
-    const [selectedEvento, setSelectedEvento] = useState<Evento>(null)
+    const [eventos, setEventos] = useState<EventoType[]>([])
+    const [selectedEvento, setSelectedEvento] = useState<EventoType>(null)
     const [showModal, setShowModal] = useState(false)
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -39,10 +24,15 @@ export default function EventoList({sessionId}) {
     const [searchQuery, setSearchQuery] = useState('');
     const PATH_EVENTO = 'eventos'
 
+    const formatCodigoEvento = (codigo) => {
+        const codigoStr = codigo.toString().padStart(8, '0'); // Garante que tenha 8 dígitos
+        return `${codigoStr.slice(0, 2)}.${codigoStr.slice(2, 4)}.${codigoStr.slice(4)}`;
+    };
+
     useEffect(() => {
         const fetchEventos = async () => {
             const response = await fetchData('eventos', currentPage, searchQuery)
-            const eventos = response.data as Evento[];
+            const eventos = response.data as EventoType[];
             setEventos(eventos);
             setTotalPages(Math.ceil(response.count / 10));  // Ajuste o divisor de acordo com PAGE_SIZE do Django
         };
@@ -56,8 +46,9 @@ export default function EventoList({sessionId}) {
     const handleCreateEvento = () => {
         setSelectedEvento({
             id_evento: null,
-            codigo_evento: 0,
+            codigo_evento: '',
             nome: '',
+            tipo: TIPO_EVENTO[0],
             descricao: '',
             observacao: '',
             qtd_dias_evento: 0,
@@ -65,9 +56,7 @@ export default function EventoList({sessionId}) {
             data_inicio: '',
             data_fim: '',
             local: null,
-            tipo: TIPO_EVENTO[0],
-            clientes: null
-
+            clientes: []
         })
     }
 
@@ -110,7 +99,7 @@ export default function EventoList({sessionId}) {
 
     }
 
-    if (selectedEvento !== null && !showModal) {
+    if (selectedEvento && !showModal) {
         return <Evento evento={selectedEvento} sessionId={sessionId}/>
     }
 
@@ -122,7 +111,7 @@ export default function EventoList({sessionId}) {
                 <InputGroup className="mb-3">
                     <Form.Control
                         type="text"
-                        placeholder="Buscar nome/nome do evento/nome do cliente..."
+                        placeholder="Buscar evento/código do evento..."
                         value={searchTerm}
                         onChange={handleSearchChange}
                     />
@@ -147,11 +136,11 @@ export default function EventoList({sessionId}) {
                 <thead>
                 <tr>
                     <th scope="col">Codigo Evento</th>
-                    <th scope="col">Nome</th>
-                    <th scope="col">Dias</th>
-                    <th scope="col">Pessoas</th>
                     <th scope="col">Data de Inicio</th>
                     <th scope="col">Data final</th>
+                    <th scope="col">Dias</th>
+                    <th scope="col">Público</th>
+                    <th scope="col">Nome</th>
                     <th scope="col">Visualizar</th>
                     <th scope="col">Editar</th>
                 </tr>
@@ -160,11 +149,12 @@ export default function EventoList({sessionId}) {
                 {eventos.map(item =>
                     <tr key={item.codigo_evento}>
                         <td>{item.codigo_evento}</td>
-                        <td>{item.nome}</td>
+                        <td>{item.data_inicio.replace(/-/g, '/')}</td>
+                        <td>{item.data_fim.replace(/-/g, '/')}</td>
                         <td>{item.qtd_dias_evento}</td>
                         <td>{item.qtd_pessoas}</td>
-                        <td>{item.data_inicio}</td>
-                        <td>{item.data_fim}</td>
+                        <td>{item.nome}</td>
+
                         <td>
                             <button
                                 onClick={() => handleViewEvento(item)}
@@ -218,8 +208,8 @@ export default function EventoList({sessionId}) {
                                 <Form.Group as={Col} controlId="formGridCNPJ">
                                     <Form.Label>Codigo do Evento</Form.Label>
                                     <Form.Control
-                                        name="cnpj"
-                                        value={selectedEvento.codigo_evento}
+                                        name="codigo"
+                                        value={formatCodigoEvento(selectedEvento.codigo_evento)}
                                         disabled={true}
                                         type="text"
                                     />
@@ -228,8 +218,8 @@ export default function EventoList({sessionId}) {
                                 <Form.Group as={Col} controlId="formGridTelefone">
                                     <Form.Label>Local</Form.Label>
                                     <Form.Control
-                                        name="telefone"
-                                        value={selectedEvento.local}
+                                        name="local"
+                                        value={selectedEvento.local.nome}
                                         disabled={true}
                                         type="text"
                                     />
@@ -285,7 +275,7 @@ export default function EventoList({sessionId}) {
                                 <Form.Label>Data do início</Form.Label>
                                 <Form.Control
                                     name="data_inicio"
-                                    value={selectedEvento.data_inicio}
+                                    value={selectedEvento.data_inicio.replace(/-/g, '/')}
                                     disabled={true}
                                     type="text"
                                 />
@@ -294,7 +284,7 @@ export default function EventoList({sessionId}) {
                                 <Form.Label>Data do fim</Form.Label>
                                 <Form.Control
                                     name="data_fim"
-                                    value={selectedEvento.data_fim}
+                                    value={selectedEvento.data_fim.replace(/-/g, '/')}
                                     disabled={true}
                                     type="text"
                                 />

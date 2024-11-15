@@ -38,15 +38,23 @@ export default function Cliente({cliente, setSelectedClienteList}) {
     const [validated, setValidated] = useState(false);
     const CLIENTE_PATH = 'clientes'
 
+    function maskCpfCnpj(value) {
+        value = value.replace(/\D+/g, ''); // Remove tudo que não é dígito
 
-    function cnpjMask(value) {
-        return value
-            .replace(/\D+/g, '') // Remove tudo que não é dígito
-            .replace(/(\d{2})(\d)/, '$1.$2') // Captura os primeiros 2 dígitos e os separa com um ponto
-            .replace(/(\d{3})(\d)/, '$1.$2') // Captura os próximos 3 dígitos e os separa com um ponto
-            .replace(/(\d{3})(\d)/, '$1/$2') // Captura os próximos 3 dígitos e os separa com uma barra
-            .replace(/(\d{4})(\d)/, '$1-$2') // Captura os próximos 4 dígitos e os separa com um hífen
-            .replace(/(-\d{2})\d+?$/, '$1'); // Captura os dois últimos dígitos após o hífen e remove qualquer coisa após eles
+        if (value.length <= 11) {
+            // Aplica a máscara de CPF
+            return value
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d)/, '$1-$2');
+        } else {
+            // Aplica a máscara de CNPJ
+            return value
+                .replace(/(\d{2})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d)/, '$1/$2')
+                .replace(/(\d{4})(\d)/, '$1-$2');
+        }
     }
 
 
@@ -74,7 +82,7 @@ export default function Cliente({cliente, setSelectedClienteList}) {
             selectedCliente.id_cliente !== null ? alert("Cliente editado com sucesso")
                 : alert("Cliente salvo com sucesso")
             window.location.reload();
-        }else{
+        } else {
             alert("Houve um erro ao processar a ação. Por favor entre em contato com o suporte")
         }
     };
@@ -131,19 +139,18 @@ export default function Cliente({cliente, setSelectedClienteList}) {
                         </Form.Control.Feedback>
                     </Form.Group>
 
-                    <Form.Group as={Col} controlId="formGridCNPJ">
-                        <Form.Label>CNPJ</Form.Label>
+                    <Form.Group as={Col} controlId="formGridCpfCnpj">
+                        <Form.Label>CPF ou CNPJ</Form.Label>
                         <Form.Control
                             required
                             name="cnpj"
-                            value={cnpjMask(selectedCliente.cnpj)}
-                            onChange={handleChange}
+                            value={maskCpfCnpj(selectedCliente.cnpj)}
+                            onChange={(e) => setSelectedCliente({...selectedCliente, cnpj: e.target.value})}
                             type="text"
-                            placeholder="XX.XXX.XXX/XXXX-XX"
-                            maxLength={18}
+                            maxLength={18} // Define o máximo de caracteres para o formato CNPJ
                         />
                         <Form.Control.Feedback type="invalid">
-                            Insira um CNPJ válido!
+                            Insira um CPF ou CNPJ válido!
                         </Form.Control.Feedback>
                     </Form.Group>
                 </Row>
@@ -185,8 +192,12 @@ export default function Cliente({cliente, setSelectedClienteList}) {
                             name="taxa_deslocamento"
                             value={selectedCliente.prazo_pagamento}
                             onChange={handlePrazoPagamento}>
+                            <option value="00 Dias">Pagamento Antecipado</option>
+                            <option value="15 Dias">15 Dias</option>
                             <option value="30 Dias">30 Dias</option>
+                            <option value="45 Dias">45 Dias</option>
                             <option value="60 Dias">60 Dias</option>
+                            <option value="75 Dias">75 Dias</option>
                             <option value="90 Dias">90 Dias</option>
                             <option value="120 Dias">120 Dias</option>
                             <option value="150 Dias">150 Dias</option>
@@ -245,7 +256,6 @@ export default function Cliente({cliente, setSelectedClienteList}) {
                             name="endereco_endereco"
                             value={selectedCliente.endereco.endereco}
                             onChange={handleChangeEndereco}
-                            placeholder='Av. Paulista'
                             type="text"
                         />
                         <Form.Control.Feedback type="invalid">
@@ -289,7 +299,6 @@ export default function Cliente({cliente, setSelectedClienteList}) {
                         <Form.Control
                             required
                             name="endereco_cidade"
-                            placeholder='Belo Horizonte'
                             value={selectedCliente.endereco.cidade}
                             onChange={handleChangeEndereco}
                             type="text"
@@ -303,7 +312,6 @@ export default function Cliente({cliente, setSelectedClienteList}) {
                         <Form.Control
                             required
                             name="endereco_bairro"
-                            placeholder='Bairro tal tal'
                             value={selectedCliente.endereco.bairro}
                             onChange={handleChangeEndereco}
                             type="text"
@@ -318,7 +326,6 @@ export default function Cliente({cliente, setSelectedClienteList}) {
                             required
                             name="endereco_estado"
                             maxLength={2}
-                            placeholder='AC'
                             value={selectedCliente.endereco.estado}
                             onChange={handleChangeEndereco}
                             type="text"
@@ -408,7 +415,7 @@ export default function Cliente({cliente, setSelectedClienteList}) {
                         Retornar
                     </Button>
                     <Button variant="primary" type="submit">
-                        {selectedCliente.id_cliente === null ? 'Criar' : 'Editar'}
+                        {selectedCliente.id_cliente === null ? 'Salvar' : 'Editar'}
                     </Button>
                 </div>
 
