@@ -112,7 +112,7 @@ export default function OrcamentoList({sessionId}) {
                 <InputGroup className="mb-3">
                     <Form.Control
                         type="text"
-                        placeholder="Buscar nome/nome do evento/nome do cliente..."
+                        placeholder="Buscar evento/código de evento/cliente..."
                         value={searchTerm}
                         onChange={handleSearchChange}
                     />
@@ -138,8 +138,9 @@ export default function OrcamentoList({sessionId}) {
                     <th scope="col">Codigo Evento</th>
                     <th scope="col">Cliente</th>
                     <th scope="col">Evento</th>
-                    <th scope="col">Status</th>
                     <th scope="col">Data Evento</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Data Criação</th>
                     <th scope="col">Visualizar</th>
                     <th scope="col">Editar</th>
                 </tr>
@@ -150,8 +151,9 @@ export default function OrcamentoList({sessionId}) {
                         <td>{item.evento.codigo_evento}</td>
                         <td>{item.cliente.nome}</td>
                         <td>{item.evento.nome}</td>
+                        <td>{item.evento.data_inicio.replace(/-/g, '/')}</td>
                         <td>{item.status}</td>
-                        <td>{item.evento.data_inicio}</td>
+                        <td>{(item.data_criacao || '').replace(/-/g, '/')}</td>
                         <td>
                             <button
                                 onClick={() => handleViewOrcamento(item)}

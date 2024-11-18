@@ -50,6 +50,7 @@ export interface OrcamentoType {
     evento: EventoType,
     cliente: ClienteType,
     logisticas: Array<LogisticaOrcamentoType>;
+    data_criacao: string,
     comidas: CardapioOrcamentoType[],
     valor_total: number,
     valor_total_logisticas: number,

@@ -37,7 +37,7 @@ export const TIPO_EVENTO = [
 ]
 
 export const TIPO_COMIDA = [
-    'Intervalo_Doce', 'Intervalo_Salgado', 'Acompanhamentos', 'Bebidas', 'Almoço', 'Embalagens_e_Personalizacao', 'Terceirizados', 'Itens_Hotel'
+    'Intervalo_Doce', 'Intervalo_Salgado', 'Acompanhamentos', 'Bebidas', 'Almoço', 'Embalagens_e_Personalizacao', 'Terceirizados', 'Itens_Hotel', 'Taxas'
 ]
 export const SUBCATEGORIAS_COMIDA = {
     Bebidas: ['Bebidas Quentes', 'Bebidas Frias'],
@@ -124,7 +124,8 @@ export const SUBCATEGORIAS_COMIDA = {
         'Almoço',
         'Taxas',
         'Kit Lanche'
-    ]
+    ],
+    Taxas: ['Taxas e Rolhas', 'Comissões e BV', 'Alvarás e Documentação Local']
 };
 
 

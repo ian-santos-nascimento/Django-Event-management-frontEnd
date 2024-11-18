@@ -136,7 +136,7 @@ export default function LogisticaList({sessionId, csrfToken}) {
 
     return (
         <div className="container">
-            <h2 className="text-center">Controle das Logisticas</h2>
+            <h2 className="text-center">Controle de Logisticas</h2>
             <div className=" justify-content-between w-100">
                 <Button variant='primary' className='mb-3' onClick={handleCreateLogistica}>Nova Logistica</Button>
                 <InputGroup className="mb-3">

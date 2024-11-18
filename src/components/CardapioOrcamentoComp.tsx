@@ -60,7 +60,6 @@ const CardapioOrcamentoComp: React.FC<Props> = ({
                 const descontoCategoria = descontosPorCategoria[categoria] || 0;
                 return acc + (subtotalCategoria - descontoCategoria);
             }, 0);
-            console.log("ORCAMENTO", orcamento, "agrupados", agrupadasPorTipo)
             setValorComidaTotal(totalComDescontos);
             setOrcamento({
                 ...orcamento,
@@ -150,7 +149,7 @@ const CardapioOrcamentoComp: React.FC<Props> = ({
                         ))}
                     </Form.Select>
                     <Form.Control.Feedback type="invalid">
-                        Escolha o tipo da comida
+                        Escolha a categoria
                     </Form.Control.Feedback>
                 </Form.Group>
 
@@ -168,7 +167,7 @@ const CardapioOrcamentoComp: React.FC<Props> = ({
                         ))}
                     </Form.Select>
                     <Form.Control.Feedback type="invalid">
-                        Escolha a subcategoria da comida
+                        Escolha a subcategoria
                     </Form.Control.Feedback>
                 </Form.Group>
 
@@ -213,16 +212,16 @@ const CardapioOrcamentoComp: React.FC<Props> = ({
                                                     onChange={(e) =>
                                                         handleQuantityChange(comida.comida_id, parseInt(e.target.value))
                                                     }
-                                                    style={{width: '75px', marginLeft: '5px'}}
+                                                    style={{width: '100px', marginLeft: '5px'}}
                                                 />
                                             </div>
                                         ))
                                     ) : (
-                                        <p>Nenhuma comida selecionada nesta categoria.</p>
+                                        <p>Nenhum item selecionado nessa categoria.</p>
                                     )}
                                 </div>
                                 <Badge bg="primary" style={{marginTop: '10px'}}>
-                                    Total categoria: R$
+                                    Total itens da categoria: R$
                                     {(
                                         agrupadasPorTipo[categoria] && agrupadasPorTipo[categoria].length > 0
                                             ? agrupadasPorTipo[categoria].reduce((total, comida) => {
@@ -263,7 +262,7 @@ const CardapioOrcamentoComp: React.FC<Props> = ({
 
             <Row className='mb-3'>
                 <Form.Group as={Col} controlId="formGridNome">
-                    <Form.Label>Total R$ comidas</Form.Label>
+                    <Form.Label>Total itens de cardápio</Form.Label>
                     <Form.Control
                         type="text"
                         value={`R$${(parseFloat(orcamento.valor_total_comidas).toFixed(2) || valorComidaTotal.toFixed(2)) || 0}`}

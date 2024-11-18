@@ -115,7 +115,7 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
         <>
             <Row>
                 <Form.Group as={Col} className="mb-3" controlId="formGridLogisticas">
-                    <Form.Label>Logisticas do Orçamento</Form.Label>
+                    <Form.Label>Logisticas de Pessoas</Form.Label>
                     <Form.Control
                         type="text"
                         placeholder="Buscar Logistica..."

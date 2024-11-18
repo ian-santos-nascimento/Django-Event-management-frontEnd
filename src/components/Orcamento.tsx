@@ -51,14 +51,12 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
     }, []);
 
     if (orcamento && !orcamento.descontos) {
-        console.log("ORCAMENTO SEM DESCONTO", orcamento)
         setOrcamento(prevOrcamento => ({
             ...prevOrcamento,
             descontos: {} // Inicializa como objeto vazio
         }));
     }
 
-    //Mapea as comidas já selecionadas quando o Orçamento é editado
     useEffect(() => {
         if (orcamento.comidas && comidas.length > 0) {
             const comidasSelecionadasTemp = orcamento.comidas.map(comidaOrcamento => {
@@ -129,9 +127,6 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
         event.stopPropagation();
 
         const errors = {};
-        if (!orcamento.nome || orcamento.nome.trim() === '') {
-            errors.nome = 'Por favor, insira o nome.';
-        }
         if (!orcamento.status || orcamento.status.trim() === '') {
             errors.status = 'Por favor, selecione o status do orçamento.';
         }
@@ -215,22 +210,32 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
         <div className='container'>
             <h2 className='text-center'>Orçamento</h2>
             <Form noValidate validated={validated} onSubmit={handleSubmit}>
-                <Row>
-                    <Form.Group as={Col} controlId="formGridNome">
-                        <Form.Label>Nome</Form.Label>
-                        <Form.Control
-                            name="nome"
-                            value={orcamento.nome}
-                            onChange={handleChange}
-                            type="text"
-                            required
-                            placeholder="Nome"
-                            isInvalid={!!errorMessages.nome}
-                        />
+                 <Row>
+                    <Form.Group className="mb-3" as={Col} controlId="formGridClientes">
+                        <Form.Label>Cliente do Evento para Orçamento</Form.Label>
+                        <Form.Select
+                            name="cliente"
+                            value={orcamento?.cliente?.id_cliente || ''}
+                            onChange={handleToggleCliente}
+                            isInvalid={!!errorMessages.cliente}
+                        >
+                            <option value="">Selecione um cliente</option>
+                            {evento.clientes.map((cliente) => (
+                                <option
+                                    key={cliente.id_cliente}
+                                    value={cliente.id_cliente}
+                                >
+                                    {cliente.nome}
+                                    {` - Taxa(${cliente.taxa_financeira * 100}%)`}
+                                </option>
+                            ))}
+                        </Form.Select>
                         <Form.Control.Feedback type="invalid">
-                            {errorMessages.nome}
+                            {errorMessages.cliente}
                         </Form.Control.Feedback>
                     </Form.Group>
+                </Row>
+                <Row>
 
                     <Form.Group as={Col} controlId="formGridStatus">
                         <Form.Label>Status do Orçamento</Form.Label>
@@ -268,31 +273,7 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
                         </Form.Control.Feedback>
                     </Form.Group>
                 </Row>
-                <Row>
-                    <Form.Group className="mb-3" as={Col} controlId="formGridClientes">
-                        <Form.Label>Cliente do Evento para Orçamento</Form.Label>
-                        <Form.Select
-                            name="cliente"
-                            value={orcamento?.cliente?.id_cliente || ''}
-                            onChange={handleToggleCliente}
-                            isInvalid={!!errorMessages.cliente}
-                        >
-                            <option value="">Selecione um cliente</option>
-                            {evento.clientes.map((cliente) => (
-                                <option
-                                    key={cliente.id_cliente}
-                                    value={cliente.id_cliente}
-                                >
-                                    {cliente.nome}
-                                    {` - Taxa(${cliente.taxa_financeira * 100}%)`}
-                                </option>
-                            ))}
-                        </Form.Select>
-                        <Form.Control.Feedback type="invalid">
-                            {errorMessages.cliente}
-                        </Form.Control.Feedback>
-                    </Form.Group>
-                </Row>
+
 
                 {/* Componentes para Cardápio e Logística */}
                 <CardapioOrcamentoComp

@@ -149,9 +149,9 @@ export default function CidadeList({csrfToken, sessionId}) {
 
     return (
         <div className="container">
-            <h2 className="text-center">Controle do Cardápio</h2>
+            <h2 className="text-center">Controle de Cardápio</h2>
             <div className=" justify-content-between w-100">
-                <Button variant='primary' className='mb-3' onClick={handleCreateCardapio}>Nova Item do Cardápio</Button>
+                <Button variant='primary' className='mb-3' onClick={handleCreateCardapio}>Nova Item de Cardápio</Button>
                 <InputGroup className="mb-3">
                     <Form.Control
                         type="text"
@@ -223,7 +223,7 @@ export default function CidadeList({csrfToken, sessionId}) {
 
             <Modal show={showModal} onHide={handleCloseModal}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Detalhes do Item do Cardápio</Modal.Title>
+                    <Modal.Title>Detalhes do Item de Cardápio</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     {selectedComida && (
@@ -236,7 +236,6 @@ export default function CidadeList({csrfToken, sessionId}) {
                                         name="nome"
                                         value={selectedComida.nome}
                                         onChange={handleChange}
-                                        type="text"
                                         placeholder="Nome"
                                         isInvalid={!!errorMessages.nome}
                                     />
@@ -252,12 +251,11 @@ export default function CidadeList({csrfToken, sessionId}) {
                                     <Form.Control
                                         required
                                         name="quantidade_minima"
-                                        placeholder="4"
                                         value={selectedComida.quantidade_minima}
                                         onChange={handleChange}
                                         type="number"
                                         isInvalid={!!errorMessages.quantidade_minima}
-                                        min="0"
+                                        min="1"
                                     />
                                     <Form.Control.Feedback type="invalid">
                                         {errorMessages.quantidade_minima || 'Por favor, insira a quantidade mínima.'}
@@ -268,7 +266,6 @@ export default function CidadeList({csrfToken, sessionId}) {
                                     <Form.Label>Valor</Form.Label>
                                     <NumericFormat
                                         name="valor"
-                                        placeholder="30,50"
                                         value={selectedComida.valor}
                                         onValueChange={handleValueChange}
                                         thousandSeparator="."
@@ -291,7 +288,6 @@ export default function CidadeList({csrfToken, sessionId}) {
                                     name="descricao"
                                     value={selectedComida.descricao}
                                     onChange={handleChange}
-                                    placeholder="Comida feita pelo chef"
                                     type="text"
                                     isInvalid={!!errorMessages.descricao}
                                 />
@@ -352,7 +348,7 @@ export default function CidadeList({csrfToken, sessionId}) {
                                         Excluir
                                     </Button>
                                     <Button variant="primary" type="submit" >
-                                        {selectedComida !== null && selectedComida.comida_id === null ? 'Criar' : 'Editar'}
+                                        {selectedComida !== null && selectedComida.comida_id === null ? 'Salvar' : 'Editar'}
                                     </Button>
                                 </div>
                             </Modal.Footer>

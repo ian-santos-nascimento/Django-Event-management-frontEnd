@@ -226,16 +226,6 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
                             </Form.Group>
                         </Row>
                         <Row>
-                            <Form.Group as={Col} controlId="formGridNome">
-                                <Form.Label>Nome</Form.Label>
-                                <Form.Control
-                                    name="nome"
-                                    value={orcamento.nome}
-                                    disabled
-                                    type="text"
-                                    placeholder="Nome"
-                                />
-                            </Form.Group>
                             <Form.Group as={Col} controlId="formGridStatus">
                                 <Form.Label>Status do Orçamento</Form.Label>
                                 <Form.Control

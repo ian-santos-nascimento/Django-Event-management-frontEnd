@@ -35,6 +35,7 @@ interface Cliente {
 
 export default function Cliente({cliente, setSelectedClienteList}) {
     const [selectedCliente, setSelectedCliente] = useState<Cliente>(cliente);
+    console.log("CLIENTE", cliente)
     const [validated, setValidated] = useState(false);
     const CLIENTE_PATH = 'clientes'
 
@@ -108,10 +109,11 @@ export default function Cliente({cliente, setSelectedClienteList}) {
     const handlePrazoPagamento = (e) => {
         const {value} = e.target;
         const dias = value.split(" ")[0];
+        // @ts-ignore
         setSelectedCliente(prevState => prevState ? {
             ...prevState,
             prazo_pagamento: value,
-            taxa_financeira: (Number(dias) / 30) * 0.03 // Transforma os dias em mês e depois aplica 3% ao mês
+            taxa_financeira: ((Number(dias) / 30) * 0.03).toFixed(4) // Transforma os dias em mês e depois aplica 3% ao mês
         } : null);
     };
 
