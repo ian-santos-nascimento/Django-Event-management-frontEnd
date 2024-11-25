@@ -47,6 +47,7 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
     const dias_evento = evento.qtd_dias_evento + 1
     const frete = verificarLogistica(cardapioSelecionado, logisticaCidade).frete
     const locomocao = verificarLogistica(cardapioSelecionado, logisticaCidade).locomocao * dias_evento
+    const impostos_taxas = parseFloat(locomocao) + parseFloat(frete) + parseFloat(orcamento.valor_imposto)
 
     useEffect(() => {
         const calcularValorCardapio = () => {
@@ -103,41 +104,6 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
         });
     }, []);
 
-
-    const renderTooltipDiaria = (props) => (
-        <Tooltip id="button-tooltip" {...props} style={{
-            ...props.style
-        }}>
-            {Object.entries(logisticaCidade).filter(([key]) => ['frete_proprio', 'frete_proprio_intervalo', 'frete_proprio_completo',
-                , 'frete_terceiros',].includes(key))
-                .map(([key, value]) => (
-                    <li style={{}} key={key}>
-                        {`${key}: R$${value}`}
-                        {value === frete &&
-                            <Button style={{blockSize: '30px', padding: '0px'}} disabled><FontAwesomeIcon
-                                icon={faCheck}/></Button>}
-                    </li>
-                ))}
-        </Tooltip>
-    );
-
-    const renderTooltipLocomoacao = (props) => (
-        <Tooltip id="button-tooltip" {...props} style={{
-            ...props.style,
-        }}>
-            {Object.entries(logisticaCidade).filter(([key]) => ['diaria_completo', 'diaria_simples'].includes(key))
-                .map(([key, value]) => (
-                    <li style={{}} key={key}>
-                        {`${key}: R$${value}`}
-                        {value * dias_evento === (locomocao) &&
-                            <Button style={{blockSize: '30px', padding: '0px'}} disabled><FontAwesomeIcon
-                                icon={faCheck}/></Button>}
-                    </li>
-                ))}
-        </Tooltip>
-    );
-
-
     const handleSubmit = async (e) => {
         e.preventDefault()
         const response = await orcamentoPost(orcamento)
@@ -181,6 +147,7 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
                                     type="text"
                                 />
                             </Form.Group>
+
                         </Row>
                         <Row>
                             <Form.Group as={Col} controlId="formGridNome">
@@ -192,40 +159,6 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
                                     type="text"
                                 />
                             </Form.Group>
-                            <Form.Group as={Col} controlId="formGridNome">
-                                <Form.Label>Valor de locomoção</Form.Label>
-                                <OverlayTrigger
-                                    placement="bottom"
-                                    delay={{show: 250, hide: 500}}
-                                    overlay={renderTooltipLocomoacao}
-                                >
-                                    <Button variant="secondary" size={"sm"} style={{marginLeft: '10px'}}>i</Button>
-                                </OverlayTrigger>
-                                <Form.Control
-                                    name="valor_decoracao"
-                                    disabled
-                                    value={`R$${parseFloat(locomocao || 0).toFixed(2)}`}
-                                    type="text"
-                                />
-                            </Form.Group>
-                            <Form.Group as={Col} controlId="formGridNome">
-                                <Form.Label>Valor frete</Form.Label>
-                                <OverlayTrigger
-                                    placement="right"
-                                    delay={{show: 250, hide: 500}}
-                                    overlay={renderTooltipDiaria}
-                                >
-                                    <Button variant="secondary" size={"sm"} style={{marginLeft: '10px'}}>i</Button>
-                                </OverlayTrigger>
-                                <Form.Control
-                                    name="valor_frete"
-                                    disabled
-                                    value={`R$${parseFloat(frete || 0).toFixed(2)}`}
-                                    type="text"
-                                />
-                            </Form.Group>
-                        </Row>
-                        <Row>
                             <Form.Group as={Col} controlId="formGridStatus">
                                 <Form.Label>Status do Orçamento</Form.Label>
                                 <Form.Control
@@ -289,7 +222,16 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
                                             R${parseFloat(orcamento.valor_desconto_logisticas).toFixed(2)}</p>
                                     </Accordion.Body>
                                 </Accordion.Item>
+                                {/* Seção de Impostos */}
 
+                                <Accordion.Item eventKey="7">
+                                    <Accordion.Header>Taxas e Impostos: R${parseFloat(impostos_taxas || 0).toFixed(2)}</Accordion.Header>
+                                    <Accordion.Body>
+                                        <p>Taxa de locomoção: R${parseFloat(locomocao || 0).toFixed(2)}</p>
+                                        <p>Taxa de frete: R${parseFloat(frete || 0).toFixed(2)}</p>
+                                        <p>Imposto (20%): R${parseFloat(orcamento.valor_imposto || 0).toFixed(2)}</p>
+                                    </Accordion.Body>
+                                </Accordion.Item>
                                 {/* Seção do Evento */}
                                 <Accordion.Item eventKey="2">
                                     <Accordion.Header>Detalhes do Evento</Accordion.Header>
