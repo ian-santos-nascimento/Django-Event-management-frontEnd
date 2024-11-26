@@ -10,22 +10,11 @@ import {deleteData, fetchData, putData, postData,} from '../ApiCall/ApiCall.jsx'
 import {InputGroup} from "react-bootstrap";
 import {faSearch, faTimes} from "@fortawesome/free-solid-svg-icons";
 import {TIPO_COMIDA, SUBCATEGORIAS_COMIDA} from "../util/OptionList"
-
-
-interface Comida {
-    comida_id: number
-    nome: string,
-    descricao: string,
-    tipo: string,
-    subtipo: string,
-    valor: number,
-    quantidade_minima: number,
-}
-
+import {ComidaType} from "../types";
 
 export default function CidadeList({csrfToken, sessionId}) {
-    const [comidas, setCidades] = useState<Comida[]>([]);
-    const [selectedComida, setSelectedComida] = useState<Comida | null>(null);
+    const [comidas, setCidades] = useState<ComidaType[]>([]);
+    const [selectedComida, setSelectedComida] = useState<ComidaType>(null);
     const [showModal, setShowModal] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -40,7 +29,7 @@ export default function CidadeList({csrfToken, sessionId}) {
     useEffect(() => {
         const fetchCardapio = async () => {
             const response = await fetchData(PATH_COMIDAS, currentPage, searchQuery)
-            const comidas = response.data as Comida[];
+            const comidas = response.data as ComidaType[];
             setCidades(comidas);
             setTotalPages(Math.ceil(response.count / 10));
         };
@@ -51,7 +40,7 @@ export default function CidadeList({csrfToken, sessionId}) {
         setCurrentPage(newPage);
     };
 
-    const handleEditComida = (comida: Comida) => {
+    const handleEditComida = (comida: ComidaType) => {
         setSelectedComida(comida);
         setShowModal(true);
     };
@@ -61,6 +50,7 @@ export default function CidadeList({csrfToken, sessionId}) {
             comida_id: null,
             nome: '',
             descricao: '',
+            fator_multiplicador: 1.0,
             tipo: TIPO_COMIDA[0],
             subtipo: SUBCATEGORIAS_COMIDA[TIPO_COMIDA[0]][0],
             valor: 0.0,
@@ -185,6 +175,7 @@ export default function CidadeList({csrfToken, sessionId}) {
                     <th scope="col">Categoria</th>
                     <th scope="col">SubCategoria</th>
                     <th scope="col">Valor</th>
+                    <th scope="col">Fator Multiplicador</th>
                     <th scope="col">Editar</th>
                 </tr>
                 </thead>
@@ -198,6 +189,8 @@ export default function CidadeList({csrfToken, sessionId}) {
                         <td>{item.tipo}</td>
                         <td>{item.subtipo}</td>
                         <td>R${item.valor}</td>
+                        <td>{item.fator_multiplicador}</td>
+                        {/* Exibe o fator multiplicador */}
                         <td>
                             <button
                                 onClick={() => handleEditComida(item)}
@@ -247,7 +240,7 @@ export default function CidadeList({csrfToken, sessionId}) {
 
                             <Row className="mb-3">
                                 <Form.Group as={Col} controlId="formGridQtdMinima">
-                                    <Form.Label>Quantidade Mínima</Form.Label>
+                                    <Form.Label>Qtd. Mínima</Form.Label>
                                     <Form.Control
                                         required
                                         name="quantidade_minima"
@@ -278,6 +271,22 @@ export default function CidadeList({csrfToken, sessionId}) {
                                     <div className="invalid-feedback">
                                         {errorMessages.valor || 'Por favor, insira o valor.'}
                                     </div>
+                                </Form.Group>
+                                <Form.Group as={Col} controlId="formGridFatorMultiplicador">
+                                    <Form.Label>Multiplicador</Form.Label>
+                                    <Form.Control
+                                        required
+                                        name="fator_multiplicador"
+                                        value={selectedComida.fator_multiplicador}
+                                        onChange={handleChange}
+                                        type="number"
+                                        step="0.001" // Permite valores com 3 casas decimais
+                                        min="1.000"
+                                        isInvalid={!!errorMessages.fator_multiplicador}
+                                    />
+                                    <Form.Control.Feedback type="invalid">
+                                        {errorMessages.fator_multiplicador || 'Por favor, insira o fator multiplicador válido.'}
+                                    </Form.Control.Feedback>
                                 </Form.Group>
                             </Row>
 
@@ -347,7 +356,7 @@ export default function CidadeList({csrfToken, sessionId}) {
                                             type="submit" onClick={handleExcluirComida}>
                                         Excluir
                                     </Button>
-                                    <Button variant="primary" type="submit" >
+                                    <Button variant="primary" type="submit">
                                         {selectedComida !== null && selectedComida.comida_id === null ? 'Salvar' : 'Editar'}
                                     </Button>
                                 </div>

@@ -17,9 +17,10 @@ export interface EventoType {
 export interface ComidaType {
     comida_id: number,
     nome: string,
-    descricao: string
+    descricao: string,
     valor: number,
-    quantidade_minima: number
+    quantidade_minima: number,
+    fator_multiplicador: number,
     tipo: string,
     subtipo: string,
 }

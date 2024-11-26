@@ -168,6 +168,7 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
         setLogisticas(logisticasResponse.data as LogisticaType[]);
 
         const comidasResponse = await fetchDataWithoutPagination('comidasWP');
+        console.log("comidas", comidasResponse)
         setComidas(comidasResponse.data as ComidaType[]);
     }
 
