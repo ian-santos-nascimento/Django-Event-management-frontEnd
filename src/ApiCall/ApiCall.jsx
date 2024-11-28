@@ -175,6 +175,7 @@ const transformOrcamentoInPayload = (orcamento) => {
         })),
         logisticas_orcamento: orcamento.logisticas.map(logistica => ({
             id: logistica.id,
+            dias: logistica.dias,
             quantidade: logistica.quantidade,
             valor: logistica.valor,
             logistica: logistica.logistica

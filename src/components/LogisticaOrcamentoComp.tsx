@@ -20,7 +20,6 @@ interface Props {
 const LogisticaOrcamentoComp: React.FC<Props> = ({
                                                      filterLogisticaState,
                                                      logisticasSelecionadas,
-                                                     setLogisticas,
                                                      setLogisticasSelecionadas,
                                                      orcamento,
                                                      logisticas,
@@ -28,7 +27,6 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
                                                      logisticaCidade,
                                                      evento
                                                  }) => {
-    const [showModal, setShowModal] = useState(false);
     const [selectedLogistica, setSelectedLogistica] = useState(null);
     const [filterLogistica, setFilterLogistica] = useState(filterLogisticaState || '');
     const [valorLogisticaTotal, setValorLogisticaTotal] = useState(orcamento?.valor_total_logisticas || 0)
@@ -58,11 +56,10 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
                 return acc;
             }
             const alimentacao = !isNaN(logisticaCidade.alimentacao) ? parseFloat(logisticaCidade.alimentacao) : 70;
-            const dias_evento = evento.qtd_dias_evento || 1;
             const quantidade = logistica.quantidade || 1;
-            const total_basico = (valorLogistica + alimentacao) * dias_evento * quantidade;
+            const total_basico = (valorLogistica + alimentacao) * logistica.dias * quantidade;
             const logisticaFilter = logisticas.find(logisticaList => logisticaList.id_logistica === logistica.id)
-            const total_logistica_fora_sp = !logisticaFilter.in_sp ? parseFloat(logisticaCidade.passagem || 0) + (parseFloat(logisticaCidade.hospedagem || 0) * (dias_evento + 1)) : 0;
+            const total_logistica_fora_sp = !logisticaFilter.in_sp ? parseFloat(logisticaCidade.passagem || 0) + (parseFloat(logisticaCidade.hospedagem || 0) * (logistica.dias + 1)) : 0;
             return acc + total_basico + total_logistica_fora_sp;
         }, 0);
         setValorLogisticaTotal(total - orcamento.valor_desconto_logisticas);
@@ -79,6 +76,17 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
 
             const updatedLogisticas = prevOrcamento.logisticas.map(log =>
                 log.id === logistica_id ? {...log, quantidade} : log
+            );
+
+            return {...prevOrcamento, logisticas: updatedLogisticas} as OrcamentoType;
+        });
+    };
+    const handleDiasLogisticaChange = (logistica_id: number, dias: number) => {
+        setOrcamento((prevOrcamento: OrcamentoType) => {
+            if (!prevOrcamento || !prevOrcamento.logisticas) return prevOrcamento;
+
+            const updatedLogisticas = prevOrcamento.logisticas.map(log =>
+                log.id === logistica_id ? {...log, dias} : log
             );
 
             return {...prevOrcamento, logisticas: updatedLogisticas} as OrcamentoType;
@@ -102,6 +110,7 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
                     logisticas: [...orcamento.logisticas, {
                         id: logistica.id_logistica,
                         quantidade: 1,
+                        dias: evento?.qtd_dias_evento,
                         valor: logistica.valor,
                         logistica: logistica.nome
                     }]
@@ -124,14 +133,22 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
                         style={{marginBottom: '10px'}}
                     />
                     <div
-                        style={{maxHeight: '150px', overflowY: 'scroll', border: '1px solid #ced4da', padding: '10px'}}>
+                        style={{
+                            maxHeight: '150px',
+                            overflowY: 'scroll',
+                            border: '1px solid #ced4da',
+                            padding: '10px',
+                        }}
+                    >
                         {filteredLogisticas.map((logistica) => (
                             <Form.Check
                                 key={logistica.id_logistica}
                                 type="checkbox"
                                 label={logistica.nome}
                                 value={logistica.id_logistica}
-                                checked={logisticasSelecionadas.some(l => l.id_logistica === logistica.id_logistica)}
+                                checked={logisticasSelecionadas.some(
+                                    (l) => l.id_logistica === logistica.id_logistica
+                                )}
                                 onChange={() => handleToggleLogistica(logistica)}
                             />
                         ))}
@@ -140,10 +157,22 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
                 <Form.Group className="mb-3" as={Col} controlId="formGridLogisticasSelecionadas">
                     <Form.Label>Logisticas Selecionadas</Form.Label>
                     <div
-                        style={{maxHeight: '150px', overflowY: 'scroll', border: '1px solid #ced4da', padding: '10px'}}>
+                        style={{
+                            maxHeight: '150px',
+                            overflowY: 'scroll',
+                            border: '1px solid #ced4da',
+                            padding: '10px',
+                        }}
+                    >
                         {logisticasSelecionadas.map((logistica) => (
-                            <div key={logistica.id_logistica}
-                                 style={{display: 'flex', alignItems: 'center', marginBottom: '10px'}}>
+                            <div
+                                key={logistica.id_logistica}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'end', // Centraliza verticalmente
+                                    marginBottom: '10px',
+                                }}
+                            >
                                 <Form.Check
                                     key={logistica.id_logistica}
                                     type="checkbox"
@@ -151,13 +180,42 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
                                     value={logistica.id_logistica}
                                     checked={true}
                                     onChange={() => handleToggleLogistica(logistica)}
+                                    style={{marginRight: '10px'}} // Adiciona espaço entre o checkbox e o input
                                 />
-                                <Form.Control
-                                    type="number"
-                                    value={orcamento?.logisticas?.find(l => l.id === logistica.id_logistica)?.quantidade || 1}
-                                    onChange={(e) => handleQuantityLogisticaChange(logistica.id_logistica, parseInt(e.target.value))}
-                                    style={{width: '75px', marginLeft: '5px'}}
-                                />
+                                <div style={{display: 'flex', flexDirection: 'column', marginLeft: '5px'}}>
+                                    <Form.Label style={{marginBottom: '5px', textAlign: 'center'}}>Qtd</Form.Label>
+                                    <Form.Control
+                                        type="number"
+                                        value={
+                                            orcamento?.logisticas?.find((l) => l.id === logistica.id_logistica)
+                                                ?.quantidade || 1
+                                        }
+                                        onChange={(e) =>
+                                            handleQuantityLogisticaChange(
+                                                logistica.id_logistica,
+                                                parseInt(e.target.value)
+                                            )
+                                        }
+                                        style={{width: '85px'}}
+                                    />
+                                </div>
+                                <div style={{display: 'flex', flexDirection: 'column', marginLeft: '5px'}}>
+                                    <Form.Label style={{marginBottom: '5px', textAlign: "center"}}>Dias</Form.Label>
+                                    <Form.Control
+                                        type="number"
+                                        value={
+                                            orcamento?.logisticas?.find((l) => l.id === logistica.id_logistica)
+                                                ?.dias || evento?.qtd_dias_evento
+                                        }
+                                        onChange={(e) =>
+                                            handleDiasLogisticaChange(
+                                                logistica.id_logistica,
+                                                parseInt(e.target.value)
+                                            )
+                                        }
+                                        style={{width: '75px'}}
+                                    />
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -177,15 +235,18 @@ const LogisticaOrcamentoComp: React.FC<Props> = ({
                             {(!logistica.in_sp && logistica.tipo === 'Pessoa') && (
                                 <Badge bg="secondary">
                                     {logistica.nome}(Diária:R${parseFloat((logistica?.valor)).toFixed(2)} + alimentação:
-                                    R${logisticaCidade?.alimentacao || 70} * {evento?.qtd_dias_evento} dias )
-                                    + (Hospedagem:R${logisticaCidade?.hospedagem} * {evento?.qtd_dias_evento + 1} dias + passagem:
+                                    R${logisticaCidade?.alimentacao || 70} * {orcamento?.logisticas?.find((l) => l.id === logistica.id_logistica)
+                                    ?.dias} dias )
+                                    + (Hospedagem:R${logisticaCidade?.hospedagem} * {evento?.qtd_dias_evento + 1} dias +
+                                    passagem:
                                     R${logisticaCidade?.passagem})
                                 </Badge>
                             )}
                             {(logistica.in_sp && logistica.tipo === 'Pessoa') && (
                                 <Badge bg="secondary">
                                     {logistica.nome}(Diária:R${parseFloat((logistica?.valor)).toFixed(2)} + alimentação:
-                                    R${logisticaCidade?.alimentacao || 70} * {evento?.qtd_dias_evento} dias )
+                                    R${logisticaCidade?.alimentacao || 70} * {orcamento?.logisticas?.find((l) => l.id === logistica.id_logistica)
+                                    ?.dias} dias )
                                 </Badge>
                             )}
                         </Fragment>

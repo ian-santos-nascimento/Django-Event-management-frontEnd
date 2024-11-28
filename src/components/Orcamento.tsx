@@ -300,7 +300,6 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
                     logisticas={logisticas}
                     filterLogisticaState={filterLogistica}
                     logisticasSelecionadas={logisticasSelecionadas}
-                    setLogisticas={setLogisticas}
                     setLogisticasSelecionadas={setLogisticasSelecionadas}
                 />
 

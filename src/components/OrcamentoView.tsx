@@ -170,7 +170,7 @@ export default function OrcamentoView({orcamentoId, sessionId}) {
                                     as={'h5'}>Logisticas</Accordion.Header>
                                 <Accordion.Body style={{backgroundColor: '##aab0b5;'}}>
                                     {orcamento.logisticas.map(logistica => (
-                                        <p>{logistica.logistica} (Qtd: {logistica.quantidade})</p>
+                                        <p>{logistica.logistica} (Qtd: {logistica.quantidade}, Dias: {logistica.dias})</p>
                                     ))}
                                 </Accordion.Body>
                             </Accordion.Item>

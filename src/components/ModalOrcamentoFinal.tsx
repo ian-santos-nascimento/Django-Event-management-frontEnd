@@ -94,9 +94,9 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
         total += total * (orcamento.cliente.taxa_financeira || 0);
         setOrcamento({
             ...orcamento,
-            valor_total: total.toFixed(2),
+            valor_total: parseFloat(total.toFixed(2)),
             valor_total_comidas: valorCardapioTotal,
-            valor_imposto: valorImposto,
+            valor_imposto: valorImposto.toFixed(2),
             valor_decoracao: adicionalDecoracao,
             evento: evento
         });
@@ -220,7 +220,7 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
                                             <Row key={index} className="mb-2">
                                                 <Col>
                                                     <strong>{logistica.logistica}</strong> - Qtd: {logistica.quantidade},
-                                                    Diária: R${parseFloat(logistica.valor).toFixed(2)}
+                                                    Diária: R${parseFloat(logistica.valor).toFixed(2)}, Dias: {logistica.dias}
                                                 </Col>
                                             </Row>
                                         ))}

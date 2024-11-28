@@ -53,13 +53,13 @@ export interface OrcamentoType {
     logisticas: Array<LogisticaOrcamentoType>;
     data_criacao: string,
     comidas: CardapioOrcamentoType[],
-    valor_total: number,
-    valor_total_logisticas: number,
-    valor_total_comidas: number,
-    valor_desconto_logisticas: number,
-    valor_desconto_comidas: number,
-    valor_imposto: number,
-    valor_decoracao: number,
+    valor_total: number;
+    valor_total_logisticas: number;
+    valor_total_comidas: number;
+    valor_desconto_logisticas: number;
+    valor_desconto_comidas: number;
+    valor_imposto: number;
+    valor_decoracao: number;
     descontos: { [categoria: string]: number };
 
 }
@@ -76,6 +76,7 @@ export interface LogisticaOrcamentoType {
     id: number;
     valor: number;
     quantidade: number;
+    dias: number;
     logistica: string
 }
 
