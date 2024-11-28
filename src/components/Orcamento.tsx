@@ -201,8 +201,7 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
 
     if (loadModalFinal) {
         return <ModalOrcamentoFinal orcamento={orcamento}
-                                    cardapioSelecionado={comidasSelecionadas}
-                                    logisticasSelecionadas={logisticasSelecionadas} evento={evento}
+                                    cardapioSelecionado={comidasSelecionadas} evento={evento}
                                     logisticaCidade={logisticaCidade} setOrcamento={setOrcamento}
                                     showModal={loadModalFinal} setShowModal={setLoadModalFinal} sessionId={sessionId}/>
     }

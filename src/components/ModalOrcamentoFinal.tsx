@@ -38,10 +38,8 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
                                                   showModal,
                                                   setShowModal,
                                                   cardapioSelecionado,
-                                                  logisticasSelecionadas,
                                                   logisticaCidade,
                                                   evento,
-                                                  sessionId
                                               }) => {
 
     const dias_evento = evento.qtd_dias_evento + 1
@@ -87,10 +85,10 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
         const descontosTotal = calcularDescontosTotal();
         const valorCardapioTotal = calcularValorCardapioTotal(valorCardapio, descontosTotal);
         const totalLogisticas = parseFloat(orcamento.valor_total_logisticas) || 0;
-        const adicionalDecoracao = calcularDecoracao();
+        const adicionalDecoracao = orcamento.valor_decoracao || calcularDecoracao();
 
         // Calculo do total com todas as despesas, descontos e adicionais
-        let total = valorCardapioTotal + totalLogisticas + adicionalDecoracao + parseFloat(frete) + parseFloat(locomocao);
+        let total = parseFloat(valorCardapioTotal + totalLogisticas + adicionalDecoracao + parseFloat(frete) + parseFloat(locomocao));
         const valorImposto = calcularImposto(total);
         total += valorImposto;
         total += total * (orcamento.cliente.taxa_financeira || 0);
@@ -150,15 +148,23 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
 
                         </Row>
                         <Row>
-                            <Form.Group as={Col} controlId="formGridNome">
-                                <Form.Label>Valor da decoração</Form.Label>
+                            <Form.Group as={Col} controlId="formGridValorDecoracao">
+                                <Form.Label>Valor da Decoração</Form.Label>
                                 <Form.Control
                                     name="valor_decoracao"
-                                    disabled
-                                    value={`R$${parseFloat(orcamento.valor_decoracao || 0).toFixed(2)}`}
-                                    type="text"
+                                    value={orcamento.valor_decoracao || ''}
+                                    onChange={(e) =>
+                                        setOrcamento({
+                                            ...orcamento,
+                                            valor_decoracao: parseFloat(e.target.value) || 0, // Atualiza o valor no estado
+                                        })
+                                    }
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
                                 />
                             </Form.Group>
+
                             <Form.Group as={Col} controlId="formGridStatus">
                                 <Form.Label>Status do Orçamento</Form.Label>
                                 <Form.Control
@@ -225,7 +231,8 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
                                 {/* Seção de Impostos */}
 
                                 <Accordion.Item eventKey="7">
-                                    <Accordion.Header>Taxas e Impostos: R${parseFloat(impostos_taxas || 0).toFixed(2)}</Accordion.Header>
+                                    <Accordion.Header>Taxas e Impostos:
+                                        R${parseFloat(impostos_taxas || 0).toFixed(2)}</Accordion.Header>
                                     <Accordion.Body>
                                         <p>Taxa de locomoção: R${parseFloat(locomocao || 0).toFixed(2)}</p>
                                         <p>Taxa de frete: R${parseFloat(frete || 0).toFixed(2)}</p>
