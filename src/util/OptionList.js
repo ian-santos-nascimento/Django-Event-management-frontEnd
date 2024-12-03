@@ -32,6 +32,10 @@ export const TIPO_LOGISTICA = [
     'Pessoa', 'Material'
 ]
 
+export const TIPO_TRANSPORTE = [
+   'Terceirizado' ,'Poli Design' , 'Boutique Gourmet'
+]
+
 export const TIPO_EVENTO = [
     'Almoços e Coffees', 'Box, Cestas e Encomendas', 'Congressos', 'Feiras', 'Sociais'
 ]

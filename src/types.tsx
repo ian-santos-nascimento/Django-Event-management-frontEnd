@@ -3,6 +3,7 @@ export interface EventoType {
     codigo_evento: string,
     nome: string,
     tipo: string,
+    transporte: string,
     descricao: string,
     observacao: string,
     qtd_dias_evento: number,
@@ -26,7 +27,7 @@ export interface ComidaType {
 }
 
 
-interface LocalType {
+export interface LocalType {
     id_local: string,
     nome: string,
     endereco: string,

@@ -89,17 +89,15 @@ export const putData = async (path, data, id) => {
 
 export const eventoPost = async (evento) => {
     try {
-        var response;
         if (evento.id_evento !== null) {
-            response = await axiosInstance.put(`eventos/${evento.id_evento}/`, evento,);
+            await axiosInstance.put(`eventos/${evento.id_evento}/`, evento,);
         } else {
-            response = await axiosInstance.post(`eventos/`, evento,);
+            await axiosInstance.post(`eventos/`, evento,);
         }
         evento.id_evento !== null ? alert('Evento editado com sucesso!') : alert('Evento criado com sucesso!');
         window.location.reload();
     } catch (error) {
         if (error.response) {
-            // A requisição foi feita e o servidor respondeu com um status code fora do alcance de 2xx
             const data = error.response.data;
             console.error('Erro na resposta da API:', data);
 

@@ -5,44 +5,29 @@ import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 
 import {eventoPost, fetchData,} from '../ApiCall/ApiCall.jsx'
-import {TIPO_EVENTO} from "../util/OptionList"
-
-interface Evento {
-    id_evento: number,
-    codigo_evento: number,
-    nome: string,
-    tipo: string,
-    descricao: string,
-    observacao: string,
-    qtd_dias_evento: number,
-    qtd_pessoas: number,
-    data_inicio: string,
-    data_fim: string,
-    local: number,
-    clientes: number[]
-
-}
-
-interface Local {
-    id_local: number,
-    nome: string,
-    cidade: number
-}
-
-interface Cliente {
-    id_cliente: number
-    cnpj: string,
-    nome: string,
-}
-
+import {TIPO_EVENTO, TIPO_TRANSPORTE} from "../util/OptionList"
+import {ClienteType, EventoType, LocalType} from "../types";
+// @ts-ignore
+import {formatDateToBackend, formatDateToISO} from "../util/utils.ts";
 
 export default function Evento({evento, sessionId}) {
-    const [locais, setLocais] = useState<Local[]>([]);
-    const [clientes, setClientes] = useState<Cliente[]>([]);
-    const [filterCliente, setFilterCliente] = useState(''); // Estado para o filtro de clientes
-    const [selectedEvento, setSelectedEvento] = useState<Evento>(evento)
+    const [locais, setLocais] = useState<LocalType[]>([]);
+    const [clientes, setClientes] = useState<ClienteType[]>([]);
+    const [filterCliente, setFilterCliente] = useState('');
+    const [selectedEvento, setSelectedEvento] = useState<EventoType>(evento)
     const [validated, setValidated] = useState(false);
-    const [errorMessages, setErrorMessages] = useState({});
+    const [errorMessages, setErrorMessages] = useState({
+        nome: '',
+        codigo_evento: '',
+        local: '',
+        transporte: '',
+        qtd_pessoas: '',
+        data_fim: '',
+        data_inicio: '',
+        tipo: '',
+        clientes: '',
+
+    });
 
     useEffect(() => {
             const fetchLocalApi = async () => {
@@ -59,15 +44,16 @@ export default function Evento({evento, sessionId}) {
     );
 
     useEffect(() => {
-        if (selectedEvento.local === null && locais[0] !== undefined) {
+        if (selectedEvento.local === null && locais !== undefined && locais.length > 0) {
+            // @ts-ignore
             setSelectedEvento(({...selectedEvento, local: locais[0].id_local}))
-
         }
+        setSelectedEvento({...selectedEvento, local: evento.local.id_local})
     }, [locais]);
 
     const handleCodigoChange = (e) => {
-        let value = e.target.value.replace(/\D/g, ''); // Remove qualquer caractere que não seja dígito
-        if (value.length > 8) value = value.slice(0, 8); // Limita o valor a 8 dígitos
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 8) value = value.slice(0, 8);
 
         if (value.length >= 5) {
             value = `${value.slice(0, 2)}.${value.slice(2, 4)}.${value.slice(4)}`;
@@ -75,36 +61,57 @@ export default function Evento({evento, sessionId}) {
             value = `${value.slice(0, 2)}.${value.slice(2)}`;
         }
 
-        e.target.value = value; // Atualiza o valor no campo de entrada
-        handleChange(e); // Chama a função de mudança original
+        e.target.value = value;
+        handleChange(e);
     };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         e.stopPropagation();
-        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-        if (!dateRegex.test(selectedEvento.data_inicio)) {
-            errors.data_inicio = 'Formato de data inválido. Use YYYY-MM-DD.';
-        }
-        const form = e.currentTarget;
-        if (form.checkValidity() === false) {
-            setValidated(true);
-        } else {
-            setValidated(true);
-            await eventoPost(selectedEvento);
-        }
-    };
+        const errors: Record<string, string> = {};
 
+
+        if (!selectedEvento.local) {
+            errors.local = 'O campo "Local" é obrigatório.';
+        }
+        if (!selectedEvento.tipo) {
+            errors.tipo = 'O campo "Tipo de Evento" é obrigatório.';
+        }
+        if (selectedEvento.qtd_pessoas < 1) {
+            errors.qtd_pessoas = 'A quantidade de pessoas deve ser maior que 0.';
+        }
+        if (!Array.isArray(selectedEvento.clientes) || selectedEvento.clientes.length < 1) {
+            errors.clientes = 'Selecione ao menos um cliente.';
+        }
+        // @ts-ignore
+        setErrorMessages(errors);
+        const form = e.currentTarget;
+        if (form.checkValidity() === false || Object.keys(errors).length > 0) {
+            setValidated(false);
+        } else {
+            setSelectedEvento(({
+                ...selectedEvento, data_inicio: formatDateToBackend(selectedEvento.data_inicio),
+                data_fim: formatDateToBackend(selectedEvento.data_fim)
+            }))
+            console.log("EVENTO", selectedEvento)
+            setValidated(true);
+            try {
+                await eventoPost(selectedEvento);
+            } catch (error) {
+                console.error('Erro ao salvar evento:', error);
+            }
+        }
+    }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const {name, value} = e.target;
         setSelectedEvento((prevEvento) => prevEvento ? {...prevEvento, [name]: value} : null);
     };
 
-    const handleToggleCliente = (clienteId) => {
-        const selectedClientes = selectedEvento?.clientes.includes(clienteId)
-            ? selectedEvento.clientes.filter(id => id !== clienteId) // Remove se já estiver selecionado
-            : [...selectedEvento.clientes, clienteId]; // Adiciona o cliente
+    const handleToggleCliente = (clienteParam: ClienteType) => {
+        const selectedClientes = selectedEvento?.clientes.some(clienteEvento => clienteEvento.id_cliente === clienteParam.id_cliente)
+            ? selectedEvento.clientes.filter(cliente => cliente.id_cliente !== clienteParam.id_cliente) // Remove se já estiver selecionado
+            : [...selectedEvento.clientes, clienteParam];
 
         setSelectedEvento({
             ...selectedEvento,
@@ -199,7 +206,26 @@ export default function Evento({evento, sessionId}) {
                             {errorMessages.local}
                         </Form.Control.Feedback>
                     </Form.Group>
-
+                    <Form.Group as={Col} controlId="formGridTransporteEvento">
+                        <Form.Label>Transporte do Evento</Form.Label>
+                        <Form.Select
+                            required
+                            name="transporte"
+                            value={selectedEvento.transporte}
+                            onChange={handleChange}
+                            isInvalid={!!errorMessages.transporte}
+                        >
+                            <option value="">Selecione um tipo</option>
+                            {TIPO_TRANSPORTE.map((tipo, index) => (
+                                <option key={index} value={tipo}>
+                                    {tipo}
+                                </option>
+                            ))}
+                        </Form.Select>
+                        <Form.Control.Feedback type="invalid">
+                            {errorMessages.transporte}
+                        </Form.Control.Feedback>
+                    </Form.Group>
                     <Form.Group as={Col} controlId="formGridQtdPessoas">
                         <Form.Label>Qtd. Pessoas</Form.Label>
                         <Form.Control
@@ -282,7 +308,7 @@ export default function Evento({evento, sessionId}) {
                             maxHeight: '150px',
                             overflowY: 'scroll',
                             border: '1px solid #ced4da',
-                            padding: '10px'
+                            padding: '10px',
                         }}
                     >
                         {filteredClientes.map((cliente) => (
@@ -291,15 +317,19 @@ export default function Evento({evento, sessionId}) {
                                 type="checkbox"
                                 label={`${cliente.nome} -- ${cliente.cnpj}`}
                                 value={cliente.id_cliente}
-                                checked={selectedEvento?.clientes.includes(cliente.id_cliente)}
-                                onChange={() => handleToggleCliente(cliente.id_cliente)}
+                                checked={selectedEvento?.clientes.some((clientEvento: ClienteType) => clientEvento?.id_cliente === cliente?.id_cliente)}
+                                onChange={() => handleToggleCliente(cliente)}
+                                isInvalid={!!errorMessages.clientes}
                             />
                         ))}
                     </div>
-                    <Form.Control.Feedback type="invalid">
-                        {errorMessages.clientes}
-                    </Form.Control.Feedback>
+                    {errorMessages.clientes && (
+                        <div className="invalid-feedback" style={{display: 'block'}}>
+                            {errorMessages.clientes}
+                        </div>
+                    )}
                 </Form.Group>
+
 
                 <div className="mt-3 d-flex justify-content-between w-100">
                     <Button variant="secondary" onClick={handleBack} type="reset">

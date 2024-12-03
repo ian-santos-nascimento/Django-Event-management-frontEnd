@@ -3,8 +3,7 @@ import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
 import Modal from "react-bootstrap/Modal";
 import {useEffect} from "react";
-import {Accordion, Badge, Button, OverlayTrigger, Tooltip} from 'react-bootstrap';
-import {faCheck,} from "@fortawesome/free-solid-svg-icons";
+import {Accordion, Badge, Button,} from 'react-bootstrap';
 import {orcamentoPost,} from '../ApiCall/ApiCall.jsx'
 
 import {
@@ -17,12 +16,11 @@ import {
 } from "../types";
 // @ts-ignore
 import verificarLogistica from "../util/CalculoOrcamento.ts";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {TIPO_TRANSPORTE} from "../util/OptionList.js"
 
 
 interface Props {
     cardapioSelecionado: ComidaType[];
-    logisticasSelecionadas: LogisticaType[];
     orcamento: OrcamentoType;
     setOrcamento: React.Dispatch<React.SetStateAction<OrcamentoType>>;
     evento: EventoType;
@@ -43,8 +41,9 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
                                               }) => {
 
     const dias_evento = evento.qtd_dias_evento + 1
-    const frete = verificarLogistica(cardapioSelecionado, logisticaCidade).frete
-    const locomocao = verificarLogistica(cardapioSelecionado, logisticaCidade).locomocao * dias_evento
+    const logistica = verificarLogistica(cardapioSelecionado, logisticaCidade)
+    const frete = evento.transporte === TIPO_TRANSPORTE[0] ? logisticaCidade.frete_terceiros : logistica.frete
+    const locomocao = logistica.locomocao * dias_evento
     const impostos_taxas = parseFloat(locomocao) + parseFloat(frete) + parseFloat(orcamento.valor_imposto)
 
     useEffect(() => {
@@ -54,20 +53,17 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
             }, 0);
         };
 
-        // Função para calcular o total de descontos
         const calcularDescontosTotal = () => {
             return Object.values(orcamento.descontos).reduce((acc: number, desconto: number): number => {
                 return acc + desconto;
             }, 0);
         };
 
-        // Função para calcular o valor do cardápio com descontos e taxa de deslocamento
         const calcularValorCardapioTotal = (valorCardapio: number, descontosTotal: number) => {
             const valorComDescontos = valorCardapio - descontosTotal;
             return valorComDescontos + (valorComDescontos * (logisticaCidade?.taxa_deslocamento || 0));
         };
 
-        // Função para verificar e calcular o valor de decoração
         const calcularDecoracao = () => {
             const decoracaoCompleta = cardapioSelecionado.some(cardapio =>
                 cardapio.tipo === 'Intervalo_Doce' || cardapio.tipo === 'Intervalo_Salgado' || cardapio.tipo === 'Almoço'
@@ -75,7 +71,6 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
             return decoracaoCompleta ? 800 : 400;
         };
 
-        // Função para calcular o valor do imposto
         const calcularImposto = (valorBase: number) => {
             return valorBase * 0.2;
         };

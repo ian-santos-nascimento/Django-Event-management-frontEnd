@@ -44,7 +44,10 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
     const isFirstRender = useRef(true);
     const [loadModalFinal, setLoadModalFinal] = useState(false)
     const [validated, setValidated] = useState(false);
-    const [errorMessages, setErrorMessages] = useState({});
+    const [errorMessages, setErrorMessages] = useState({ status: '',
+            cliente: '',
+            observacoes: '',
+            comidasSelecionadas: '',});
 
     useEffect(() => {
         getModels();
@@ -126,7 +129,13 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
         event.preventDefault();
         event.stopPropagation();
 
-        const errors = {};
+        const errors = {
+            status: '',
+            cliente: '',
+            observacoes: '',
+            comidasSelecionadas: '',
+
+        };
         if (!orcamento.status || orcamento.status.trim() === '') {
             errors.status = 'Por favor, selecione o status do orçamento.';
         }
@@ -284,7 +293,6 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
                     orcamento={orcamento}
                     evento={evento}
                     setSelectedCardapio={setComidasSelecionadas}
-                    isInvalid={!!errorMessages.comidasSelecionadas}
                 />
                 {errorMessages.comidasSelecionadas && (
                     <div className="text-danger">

@@ -7,7 +7,6 @@ import {parse} from "@fortawesome/fontawesome-svg-core";
 interface Props {
     filterLogisticaState: string;
     logisticasSelecionadas: LogisticaType[];
-    setLogisticas: React.Dispatch<React.SetStateAction<LogisticaType[]>>;
     setLogisticasSelecionadas: React.Dispatch<React.SetStateAction<LogisticaType[]>>;
     orcamento: OrcamentoType;
     logisticas: LogisticaType[];

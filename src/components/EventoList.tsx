@@ -10,7 +10,7 @@ import Evento from "./Evento.tsx"
 import {deleteData, fetchData} from "../ApiCall/ApiCall";
 import {InputGroup} from "react-bootstrap";
 import {faSearch, faTimes} from "@fortawesome/free-solid-svg-icons";
-import {TIPO_EVENTO} from "../util/OptionList"
+import {TIPO_EVENTO, TIPO_TRANSPORTE} from "../util/OptionList"
 import {EventoType} from "../types";
 
 
@@ -49,6 +49,7 @@ export default function EventoList({sessionId}) {
             codigo_evento: '',
             nome: '',
             tipo: TIPO_EVENTO[0],
+            transporte: TIPO_TRANSPORTE[0],
             descricao: '',
             observacao: '',
             qtd_dias_evento: 0,
@@ -270,37 +271,47 @@ export default function EventoList({sessionId}) {
                                     />
                                 </Form.Group>
                             </Row>
+                            <Row>
 
+                                <Form.Group as={Col} controlId="formGridInscricaoEstadual">
+                                    <Form.Label>Data do início</Form.Label>
+                                    <Form.Control
+                                        name="data_inicio"
+                                        value={selectedEvento.data_inicio.replace(/-/g, '/')}
+                                        disabled={true}
+                                        type="text"
+                                    />
+                                </Form.Group>
+                                <Form.Group as={Col} controlId="formGridInscricaoEstadual">
+                                    <Form.Label>Data do fim</Form.Label>
+                                    <Form.Control
+                                        name="data_fim"
+                                        value={selectedEvento.data_fim.replace(/-/g, '/')}
+                                        disabled={true}
+                                        type="text"
+                                    />
+                                </Form.Group>
+                            </Row>
                             <Form.Group as={Col} controlId="formGridInscricaoEstadual">
-                                <Form.Label>Data do início</Form.Label>
-                                <Form.Control
-                                    name="data_inicio"
-                                    value={selectedEvento.data_inicio.replace(/-/g, '/')}
-                                    disabled={true}
-                                    type="text"
-                                />
-                            </Form.Group>
-                            <Form.Group as={Col} controlId="formGridInscricaoEstadual">
-                                <Form.Label>Data do fim</Form.Label>
-                                <Form.Control
-                                    name="data_fim"
-                                    value={selectedEvento.data_fim.replace(/-/g, '/')}
-                                    disabled={true}
-                                    type="text"
-                                />
-                            </Form.Group>
-                            <Modal.Footer className="modal-footer-custom">
-                                <div className="d-flex w-100">
-                                    <Button
-                                        disabled={selectedEvento !== null && selectedEvento.id_evento === null}
-                                        variant="danger"
-                                        onClick={handleExcluirEvento}>
-                                        Excluir
-                                    </Button>
+                                    <Form.Label>Tipo de transporte</Form.Label>
+                                    <Form.Control
+                                        name="transporte"
+                                        value={selectedEvento.transporte}
+                                        disabled={true}
+                                        type="text"
+                                    />
+                                </Form.Group>
 
-                                </div>
+                            <div className="d-flex w-100 mt-4">
+                                <Button
+                                    disabled={selectedEvento !== null && selectedEvento.id_evento === null}
+                                    variant="danger"
+                                    onClick={handleExcluirEvento}>
+                                    Excluir
+                                </Button>
 
-                            </Modal.Footer>
+                            </div>
+
                         </div>
                     )}
                 </Modal.Body>
