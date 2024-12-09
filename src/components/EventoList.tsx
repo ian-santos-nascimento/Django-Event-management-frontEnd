@@ -7,7 +7,8 @@ import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
 // @ts-ignore
 import Evento from "./Evento.tsx"
-import {deleteData, fetchData} from "../ApiCall/ApiCall";
+// @ts-ignore
+import {deleteData, fetchData} from "../ApiCall/ApiCall.ts";
 import {InputGroup} from "react-bootstrap";
 import {faSearch, faTimes} from "@fortawesome/free-solid-svg-icons";
 import {TIPO_EVENTO, TIPO_TRANSPORTE} from "../util/OptionList"

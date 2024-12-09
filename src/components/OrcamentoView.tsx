@@ -6,7 +6,7 @@ import Form from "react-bootstrap/Form";
 import {Accordion, FormGroup} from "react-bootstrap";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
-import {fetchDataWithId, deleteData} from "../ApiCall/ApiCall.jsx"
+import {fetchDataWithId, deleteData} from "../ApiCall/ApiCall.ts"
 import {OrcamentoType} from "../types";
 
 

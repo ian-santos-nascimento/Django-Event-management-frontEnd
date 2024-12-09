@@ -5,7 +5,7 @@ import Row from 'react-bootstrap/Row';
 import {Alert} from "react-bootstrap";
 import Button from 'react-bootstrap/Button';
 import InputMask from 'react-input-mask';
-import {deleteData, postData, fetchDataWithoutPagination, putData,} from '../ApiCall/ApiCall.jsx'
+import {deleteData, postData, fetchDataWithoutPagination, putData,} from '../ApiCall/ApiCall.ts'
 
 
 interface Local {

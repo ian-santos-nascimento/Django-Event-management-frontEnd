@@ -4,7 +4,7 @@ import Col from "react-bootstrap/Col";
 import Modal from "react-bootstrap/Modal";
 import {useEffect} from "react";
 import {Accordion, Badge, Button,} from 'react-bootstrap';
-import {orcamentoPost,} from '../ApiCall/ApiCall.jsx'
+import {orcamentoPost,} from '../ApiCall/ApiCall.ts'
 
 import {
     CardapioOrcamentoType,

@@ -5,7 +5,7 @@ import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 import InputMask from 'react-input-mask';
 import {FormControl} from "react-bootstrap";
-import {putData, postData,} from '../ApiCall/ApiCall.jsx'
+import {putData, postData,} from '../ApiCall/ApiCall.ts'
 
 interface Cliente {
     id_cliente: string,

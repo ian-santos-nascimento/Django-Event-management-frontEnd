@@ -7,7 +7,7 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 // @ts-ignore
 import Cliente from "./Cliente.tsx";
-import {deleteData, fetchData,} from '../ApiCall/ApiCall.jsx'
+import {deleteData, fetchData,} from '../ApiCall/ApiCall.ts'
 import {InputGroup} from "react-bootstrap";
 import {faSearch, faTimes} from "@fortawesome/free-solid-svg-icons";
 

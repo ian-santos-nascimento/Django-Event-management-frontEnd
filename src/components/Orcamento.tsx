@@ -3,7 +3,8 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import {fetchDataWithId, fetchDataWithoutPagination} from "../ApiCall/ApiCall";
+// @ts-ignore
+import {fetchDataWithId, fetchDataWithoutPagination} from "../ApiCall/ApiCall.ts";
 import {STATUS_ORCAMENTO} from "../util/OptionList"
 // @ts-ignore
 import LogisticaOrcamentoComp from "./LogisticaOrcamentoComp.tsx";
@@ -44,10 +45,12 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
     const isFirstRender = useRef(true);
     const [loadModalFinal, setLoadModalFinal] = useState(false)
     const [validated, setValidated] = useState(false);
-    const [errorMessages, setErrorMessages] = useState({ status: '',
-            cliente: '',
-            observacoes: '',
-            comidasSelecionadas: '',});
+    const [errorMessages, setErrorMessages] = useState({
+        status: '',
+        cliente: '',
+        observacoes: '',
+        comidasSelecionadas: '',
+    });
 
     useEffect(() => {
         getModels();
@@ -126,6 +129,7 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
     }, []);
 
     const handleSubmit = (event) => {
+        console.log("ENTROU NO SUBMIT")
         event.preventDefault();
         event.stopPropagation();
 
@@ -139,7 +143,7 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
         if (!orcamento.status || orcamento.status.trim() === '') {
             errors.status = 'Por favor, selecione o status do orçamento.';
         }
-         if (!orcamento.observacoes || orcamento.observacoes.trim() === '') {
+        if (!orcamento.observacoes || orcamento.observacoes.trim() === '') {
             errors.observacoes = 'Por favor, adicione uma observação.';
         }
         if (!orcamento.cliente || !orcamento.cliente.id_cliente) {
@@ -150,6 +154,8 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
         }
         setErrorMessages(errors);
         setValidated(true);
+        console.log("ENTROU NO SUBMIT ERROS", errors)
+
 
         // Se não houver erros, prossegue para atualizar a variável
         if (Object.keys(errors).length === 0) {
@@ -219,7 +225,7 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
         <div className='container'>
             <h2 className='text-center'>Orçamento</h2>
             <Form noValidate validated={validated} onSubmit={handleSubmit}>
-                 <Row>
+                <Row>
                     <Form.Group className="mb-3" as={Col} controlId="formGridClientes">
                         <Form.Label>Cliente do Evento para Orçamento</Form.Label>
                         <Form.Select

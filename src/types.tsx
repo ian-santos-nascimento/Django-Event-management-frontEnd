@@ -107,3 +107,15 @@ export interface LogisticaType {
     tipo: string,
     in_sp: boolean,
 }
+
+export interface ConfigOrcamentoWordType {
+    orcamento: OrcamentoType;
+    data: {
+        [date: string]: {
+            [intervalo: string]: {
+                comidas: ComidaType[];
+            };
+        };
+    };
+};
+

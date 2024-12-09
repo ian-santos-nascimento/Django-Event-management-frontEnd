@@ -1,4 +1,5 @@
 import axiosInstance from './authService';
+import type {ConfigOrcamentoWordType} from "../types";
 
 
 export const fetchData = async (data, page, search = '') => {
@@ -149,6 +150,27 @@ export const orcamentoPost = async (orcamento) => {
     }
     return {success: false, data: null};
 }
+
+export const downloadOrcamento = (config: ConfigOrcamentoWordType) => {
+    axiosInstance.post("download-orcamento/" + config.orcamento.id_orcamento,
+        JSON.stringify(config),
+        {
+            responseType: "blob"
+        }
+    )
+        .then((response) => {
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `orcamento_${config.orcamento.id_orcamento}.docx`);
+            document.body.appendChild(link);
+            link.click();
+        })
+        .catch((error) => {
+            console.error("Erro ao baixar o arquivo:", error)
+            alert("Não foi possivel fazer download do documento, Por favor, tente novamente mais tarde e entre em contato com o suporte")
+        });
+};
 
 const transformOrcamentoInPayload = (orcamento) => {
     return {

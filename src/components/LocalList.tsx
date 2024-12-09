@@ -4,7 +4,7 @@ import Button from 'react-bootstrap/Button';
 // @ts-ignore
 import Local from './Local.tsx';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {fetchData,} from '../ApiCall/ApiCall.jsx'
+import {fetchData,} from '../ApiCall/ApiCall.ts'
 import {InputGroup} from "react-bootstrap";
 import Form from "react-bootstrap/Form";
 import {faSearch, faTimes} from "@fortawesome/free-solid-svg-icons";

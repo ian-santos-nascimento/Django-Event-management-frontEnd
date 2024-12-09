@@ -6,7 +6,8 @@ import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import {NumericFormat} from 'react-number-format';
-import {deleteData, fetchData, putData, postData,} from '../ApiCall/ApiCall.jsx'
+//@ts-ignore
+import {deleteData, fetchData, putData, postData,} from '../ApiCall/ApiCall.ts'
 import {InputGroup} from "react-bootstrap";
 import {faSearch, faTimes} from "@fortawesome/free-solid-svg-icons";
 import {TIPO_COMIDA, SUBCATEGORIAS_COMIDA} from "../util/OptionList"

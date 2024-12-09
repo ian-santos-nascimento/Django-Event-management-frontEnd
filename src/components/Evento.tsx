@@ -4,7 +4,8 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 
-import {eventoPost, fetchData,} from '../ApiCall/ApiCall.jsx'
+// @ts-ignore
+import {eventoPost, fetchData,} from '../ApiCall/ApiCall.ts'
 import {TIPO_EVENTO, TIPO_TRANSPORTE} from "../util/OptionList"
 import {ClienteType, EventoType, LocalType} from "../types";
 // @ts-ignore
@@ -46,9 +47,9 @@ export default function Evento({evento, sessionId}) {
     useEffect(() => {
         if (selectedEvento.local === null && locais !== undefined && locais.length > 0) {
             // @ts-ignore
-            setSelectedEvento(({...selectedEvento, local: locais[0].id_local}))
+            setSelectedEvento(({...selectedEvento, local: locais[0]?.id_local}))
         }
-        setSelectedEvento({...selectedEvento, local: evento.local.id_local})
+        setSelectedEvento({...selectedEvento, local: evento.local?.id_local})
     }, [locais]);
 
     const handleCodigoChange = (e) => {

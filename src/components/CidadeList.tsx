@@ -5,7 +5,7 @@ import Button from 'react-bootstrap/Button';
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import {fetchData, putData, postData, deleteData,} from '../ApiCall/ApiCall.jsx'
+import {fetchData, putData, postData, deleteData,} from '../ApiCall/ApiCall.ts'
 import {ESTADOS_BRASILEIROS} from '../util/OptionList'
 import {InputGroup} from "react-bootstrap";
 import {faSearch, faTimes} from "@fortawesome/free-solid-svg-icons";

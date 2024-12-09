@@ -9,10 +9,13 @@ import Col from "react-bootstrap/Col";
 import Orcamento from './Orcamento.tsx'
 // @ts-ignore
 import OrcamentoView from "./OrcamentoView.tsx";
-import {fetchData} from "../ApiCall/ApiCall";
+// @ts-ignore
+import {fetchData, downloadOrcamento} from "../ApiCall/ApiCall.ts";
 import {InputGroup} from "react-bootstrap";
-import {faSearch, faTimes} from "@fortawesome/free-solid-svg-icons";
-import type {OrcamentoType, EventoType} from '../types';
+import {faSearch, faTimes, faDownload} from "@fortawesome/free-solid-svg-icons";
+import type {OrcamentoType, EventoType, ConfigOrcamentoWordType} from '../types';
+// @ts-ignore
+import ConfigOrcamentoWordModal from "./ConfigOrcamentoWordModal.tsx";
 
 export default function OrcamentoList({sessionId}) {
     const [orcamentos, setOrcamentos] = useState<OrcamentoType[]>([])
@@ -22,6 +25,10 @@ export default function OrcamentoList({sessionId}) {
     const [showModal, setShowModal] = useState(false)
     const [showOrcamento, setShowOrcamento] = useState(false)
     const [viewOrcamento, setViewOrcamento] = useState(false)
+    const [configWordModal, setConfigWordModal] = useState<{
+        open: boolean;
+        orcamento?: OrcamentoType;
+    }>();
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
@@ -104,6 +111,23 @@ export default function OrcamentoList({sessionId}) {
 
     }
 
+    const handleDownloadOrcamento = (orcamento: OrcamentoType) => {
+        setConfigWordModal({
+            open: true,
+            orcamento: orcamento
+        });
+    };
+
+    const handleCloseConfigWordModal = () => {
+        setConfigWordModal({open: false});
+    };
+
+    const handleSubmitConfigWordModal = async (config: ConfigOrcamentoWordType) => {
+        await downloadOrcamento(config);
+        handleCloseConfigWordModal();
+    };
+
+
     return (
         <div className="container">
             <h2 className="text-center">Controle de Orçamentos</h2>
@@ -143,6 +167,7 @@ export default function OrcamentoList({sessionId}) {
                     <th scope="col">Data Criação</th>
                     <th scope="col">Visualizar</th>
                     <th scope="col">Editar</th>
+                    <th scope="col">Baixar</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -172,7 +197,25 @@ export default function OrcamentoList({sessionId}) {
                                 <FontAwesomeIcon icon="edit"/>
                             </button>
                         </td>
+                        <td>
+                            <button
+                                onClick={() => handleDownloadOrcamento(item)}
+                                type="button"
+                                className="btn btn-sm btn-outline-primary"
+                            >
+                                <FontAwesomeIcon icon={faDownload}/>
+                            </button>
+                        </td>
                     </tr>
+                )}
+                {/* Conditionally render the modal */}
+                {configWordModal?.open && (
+                    <ConfigOrcamentoWordModal
+                        open={configWordModal.open}
+                        onOpenChange={handleCloseConfigWordModal}
+                        orcamento={configWordModal.orcamento!}
+                        onSubmit={handleSubmitConfigWordModal}
+                    />
                 )}
                 </tbody>
             </table>

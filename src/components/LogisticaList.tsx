@@ -9,7 +9,7 @@ import Col from "react-bootstrap/Col";
 import {InputGroup} from "react-bootstrap";
 import {faSearch, faTimes} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {deleteData, fetchData, postData, putData,} from '../ApiCall/ApiCall.jsx'
+import {deleteData, fetchData, postData, putData,} from '../ApiCall/ApiCall.ts'
 
 
 interface Logistica {
