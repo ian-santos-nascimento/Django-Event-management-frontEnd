@@ -1,6 +1,5 @@
 import {useState, useMemo} from 'react';
 import Modal from 'react-bootstrap/Modal';
-import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
@@ -8,6 +7,8 @@ import {ComidaType, ConfigOrcamentoWordType, OrcamentoType} from "../types";
 // @ts-ignore
 import {formatDateToISO} from "../util/utils.ts";
 import {ProgressBar} from "react-bootstrap";
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+
 
 interface ConfigOrcamentoWordModalProps {
     open: boolean;
@@ -23,9 +24,16 @@ export const ConfigOrcamentoWordModal: React.FC<ConfigOrcamentoWordModalProps> =
                                                                                       onSubmit
                                                                                   }) => {
     const INTERVALO_TIPOS = [
-        "Intervalo_manha",
-        "Intervalo_almoco",
-        "Intervalo_tarde"
+        "Bebidas Quentes",
+        "Bebidas Frias",
+        "Início da Manhã",
+        "Almoço",
+        "Sobremesa",
+        "Intervalo da tarde",
+        "Fim da tarde",
+        "Happy Hour",
+        "Ações extras",
+        "Itens extras",
     ];
 
     const eventDates = useMemo(() => {
@@ -43,6 +51,7 @@ export const ConfigOrcamentoWordModal: React.FC<ConfigOrcamentoWordModalProps> =
     }, [orcamento.evento.data_inicio, orcamento.evento.data_fim]);
 
     const [currentStep, setCurrentStep] = useState(0);
+    const [currentIntervalIndex, setCurrentIntervalIndex] = useState(0);
     const [selectedFoods, setSelectedFoods] = useState<ConfigOrcamentoWordType["data"]>(() => {
         return eventDates.reduce((acc, date) => {
             acc[date] = INTERVALO_TIPOS.reduce((intervalAcc, intervalo) => {
@@ -93,51 +102,68 @@ export const ConfigOrcamentoWordModal: React.FC<ConfigOrcamentoWordModalProps> =
         onOpenChange(false);
     };
 
+    const handleIntervalNavigation = (direction: 'next' | 'prev') => {
+        setCurrentIntervalIndex(prev => {
+            if (direction === 'next') {
+                return (prev + 1) % INTERVALO_TIPOS.length;
+            } else {
+                return prev === 0 ? INTERVALO_TIPOS.length - 1 : prev - 1;
+            }
+        });
+    };
+
     const renderStepContent = () => {
         const currentDate = eventDates[currentStep];
+        const currentIntervalType = INTERVALO_TIPOS[currentIntervalIndex];
 
         return (
             <Modal.Body>
                 <div className="text-center mb-4">
                     <h4>Configurar Cardápio - Dia {currentStep + 1}</h4>
                     <ProgressBar
-                        now={((currentStep + 1) * 100) / (eventDates.length + 1)}
+                        now={((currentStep + 1) * 100) / (eventDates.length )}
                         label={`${currentStep + 1}/${eventDates.length}`}
                     />
                     <p className="mt-2">{formatDate(currentDate)}</p>
                 </div>
 
-                {INTERVALO_TIPOS.map((intervalType) => (
-                    <div key={intervalType} className="mb-4">
+                <div className="d-flex align-items-center">
+                    <Button
+                        variant="outline-secondary"
+                        onClick={() => handleIntervalNavigation('prev')}
+                        className="me-2"
+                    >
+                        <ChevronLeft/>
+                    </Button>
+
+                    <div className="flex-grow-1">
                         <h5 className="mb-3 text-center">
-                            {intervalType === 'Intervalo_manha'
-                                ? 'Intervalo Manhã'
-                                : intervalType === 'Intervalo_almoco'
-                                    ? 'Intervalo Almoço'
-                                    : 'Intervalo Tarde'}
+                            {currentIntervalType}
                         </h5>
                         <div
                             style={{
-                                maxHeight: '300px', // Altura máxima para ativar o scroll
+                                maxHeight: '300px',
                                 overflowY: 'auto',
-                                border: '1px solid #ccc', // Para destacar o contêiner scrollável
+                                overflowX: 'hidden',
+                                border: '1px solid #ccc',
                                 padding: '10px',
                                 borderRadius: '5px',
                             }}
                         >
+                            <div className="row">
                                 {orcamento.comidas.map((cardapio) => (
                                     <Col key={cardapio.comida_id} md={4} className="mb-2">
                                         <Form.Check
                                             type="checkbox"
-                                            id={`food-${currentStep}-${intervalType}-${cardapio.comida_id}`}
+                                            id={`food-${currentStep}-${currentIntervalType}-${cardapio.comida_id}`}
                                             label={cardapio.comida}
-                                            checked={selectedFoods[currentDate][intervalType].comidas.some(
+                                            checked={selectedFoods[currentDate][currentIntervalType].comidas.some(
                                                 (c) => c.comida_id === cardapio.comida_id
                                             )}
                                             onChange={(e) =>
                                                 updateSelectedFoods(
                                                     currentDate,
-                                                    intervalType,
+                                                    currentIntervalType,
                                                     {
                                                         comida_id: cardapio.comida_id,
                                                         nome: cardapio.comida,
@@ -154,9 +180,18 @@ export const ConfigOrcamentoWordModal: React.FC<ConfigOrcamentoWordModalProps> =
                                         />
                                     </Col>
                                 ))}
+                            </div>
                         </div>
                     </div>
-                ))}
+
+                    <Button
+                        variant="outline-secondary"
+                        onClick={() => handleIntervalNavigation('next')}
+                        className="ms-2"
+                    >
+                        <ChevronRight/>
+                    </Button>
+                </div>
             </Modal.Body>
         );
     };
@@ -209,6 +244,6 @@ export const ConfigOrcamentoWordModal: React.FC<ConfigOrcamentoWordModalProps> =
             {renderFooter()}
         </Modal>
     );
-};
+}
 
 export default ConfigOrcamentoWordModal;

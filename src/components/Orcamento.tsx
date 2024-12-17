@@ -134,10 +134,6 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
         event.stopPropagation();
 
         const errors = {
-            status: '',
-            cliente: '',
-            observacoes: '',
-            comidasSelecionadas: '',
 
         };
         if (!orcamento.status || orcamento.status.trim() === '') {
