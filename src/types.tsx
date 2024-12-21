@@ -61,6 +61,8 @@ export interface OrcamentoType {
     valor_desconto_comidas: number;
     valor_imposto: number;
     valor_decoracao: number;
+    valor_frete: number;
+    valor_locomocao: number;
     descontos: { [categoria: string]: number };
 
 }

@@ -1,5 +1,5 @@
 import axiosInstance from './authService';
-import type {ConfigOrcamentoWordType} from "../types";
+import type {ConfigOrcamentoWordType, OrcamentoType} from "../types";
 
 
 export const fetchData = async (data, page, search = '') => {
@@ -172,7 +172,7 @@ export const downloadOrcamento = (config: ConfigOrcamentoWordType) => {
         });
 };
 
-const transformOrcamentoInPayload = (orcamento) => {
+const transformOrcamentoInPayload = (orcamento: OrcamentoType) => {
     return {
         id_orcamento: orcamento.id_orcamento,
         nome: orcamento.nome,
@@ -185,6 +185,8 @@ const transformOrcamentoInPayload = (orcamento) => {
         valor_desconto_logisticas: orcamento.valor_desconto_logisticas,
         valor_imposto: orcamento.valor_imposto,
         valor_decoracao: orcamento.valor_decoracao,
+        valor_frete: orcamento.valor_frete,
+        valor_locomocao: orcamento.valor_locomocao,
         cliente: orcamento.cliente.id_cliente,
         evento: orcamento.evento.id_evento,
         comidas_orcamento: orcamento.comidas.map(comida => ({

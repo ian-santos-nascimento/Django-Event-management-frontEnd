@@ -92,6 +92,8 @@ const ModalOrcamentoFinal: React.FC<Props> = ({
             valor_total: parseFloat(total.toFixed(2)),
             valor_total_comidas: valorCardapioTotal,
             valor_imposto: valorImposto.toFixed(2),
+            valor_frete: parseFloat(frete),
+            valor_locomocao: parseFloat(locomocao),
             valor_decoracao: adicionalDecoracao,
             evento: evento
         });
