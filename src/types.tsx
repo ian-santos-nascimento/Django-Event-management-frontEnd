@@ -115,7 +115,7 @@ export interface ConfigOrcamentoWordType {
     data: {
         [date: string]: {
             [intervalo: string]: {
-                comidas: ComidaType[];
+                comidas: CardapioOrcamentoType[];
             };
         };
     };

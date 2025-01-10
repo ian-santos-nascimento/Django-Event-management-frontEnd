@@ -70,7 +70,6 @@ export default function CidadeList({csrfToken, sessionId}) {
         event.preventDefault();
         event.stopPropagation();
         setErrorMessages({});
-        console.log("FORM VALIDO", form.checkValidity())
         if (form.checkValidity() === false) {
             setValidated(true);
         } else {

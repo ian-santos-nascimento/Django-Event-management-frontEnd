@@ -94,7 +94,6 @@ export default function Evento({evento, sessionId}) {
                 ...selectedEvento, data_inicio: formatDateToBackend(selectedEvento.data_inicio),
                 data_fim: formatDateToBackend(selectedEvento.data_fim)
             }))
-            console.log("EVENTO", selectedEvento)
             setValidated(true);
             try {
                 await eventoPost(selectedEvento);

@@ -78,7 +78,6 @@ export default function LogisticaList({sessionId, csrfToken}) {
         event.stopPropagation();
         setErrorMessages({});
         setSuccessMessage('');
-        console.log("FORM VALIDO", form.checkValidity())
         if (form.checkValidity() === false) {
             setValidated(true);
         } else {

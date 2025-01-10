@@ -129,7 +129,6 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
     }, []);
 
     const handleSubmit = (event) => {
-        console.log("ENTROU NO SUBMIT")
         event.preventDefault();
         event.stopPropagation();
 
@@ -150,8 +149,6 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
         }
         setErrorMessages(errors);
         setValidated(true);
-        console.log("ENTROU NO SUBMIT ERROS", errors)
-
 
         // Se não houver erros, prossegue para atualizar a variável
         if (Object.keys(errors).length === 0) {
@@ -179,7 +176,6 @@ export default function Orcamento({eventoState, orcamentoState, sessionId}) {
         setLogisticas(logisticasResponse.data as LogisticaType[]);
 
         const comidasResponse = await fetchDataWithoutPagination('comidasWP');
-        console.log("comidas", comidasResponse)
         setComidas(comidasResponse.data as ComidaType[]);
     }
 

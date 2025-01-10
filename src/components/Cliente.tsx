@@ -35,7 +35,6 @@ interface Cliente {
 
 export default function Cliente({cliente, setSelectedClienteList}) {
     const [selectedCliente, setSelectedCliente] = useState<Cliente>(cliente);
-    console.log("CLIENTE", cliente)
     const [validated, setValidated] = useState(false);
     const CLIENTE_PATH = 'clientes'
 

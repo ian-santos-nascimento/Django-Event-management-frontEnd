@@ -3,11 +3,11 @@ import Modal from 'react-bootstrap/Modal';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import {ComidaType, ConfigOrcamentoWordType, OrcamentoType} from "../types";
+import {CardapioOrcamentoType, ConfigOrcamentoWordType, OrcamentoType} from "../types";
 // @ts-ignore
 import {formatDateToISO} from "../util/utils.ts";
-import {ProgressBar} from "react-bootstrap";
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import {ProgressBar, Toast} from "react-bootstrap";
+import {ChevronLeft, ChevronRight} from 'lucide-react';
 
 
 interface ConfigOrcamentoWordModalProps {
@@ -36,6 +36,8 @@ export const ConfigOrcamentoWordModal: React.FC<ConfigOrcamentoWordModalProps> =
         "Itens extras",
     ];
 
+    const [showToast, setShowToast] = useState(false);
+
     const eventDates = useMemo(() => {
         const startDate = new Date(formatDateToISO(orcamento.evento.data_inicio));
         const endDate = new Date(formatDateToISO(orcamento.evento.data_fim));
@@ -57,7 +59,7 @@ export const ConfigOrcamentoWordModal: React.FC<ConfigOrcamentoWordModalProps> =
             acc[date] = INTERVALO_TIPOS.reduce((intervalAcc, intervalo) => {
                 intervalAcc[intervalo] = {comidas: []};
                 return intervalAcc;
-            }, {} as { [intervalo: string]: { comidas: ComidaType[] } });
+            }, {} as { [intervalo: string]: { comidas: CardapioOrcamentoType[] } });
             return acc;
         }, {} as ConfigOrcamentoWordType["data"]);
     });
@@ -74,7 +76,7 @@ export const ConfigOrcamentoWordModal: React.FC<ConfigOrcamentoWordModalProps> =
     const updateSelectedFoods = (
         date: string,
         intervalType: string,
-        comida: ComidaType,
+        comida: CardapioOrcamentoType,
         checked: boolean
     ) => {
         setSelectedFoods(prev => {
@@ -94,6 +96,49 @@ export const ConfigOrcamentoWordModal: React.FC<ConfigOrcamentoWordModalProps> =
         });
     };
 
+    const calculateQuantityOfFood = (comida_id, currentDate, currentIntervalType) => {
+        const comidaOrcamento = orcamento.comidas.find(c => c.comida_id === comida_id);
+        let quantidadeTotal = 0;
+        Object.keys(selectedFoods).forEach(date => {
+            Object.keys(selectedFoods[date]).forEach(interval => {
+                const comidaEncontrada = selectedFoods[date][interval].comidas.find(
+                    c => c.comida_id === comida_id
+                );
+                // Só soma se não for o item atual sendo modificado
+                if (comidaEncontrada && (date !== currentDate || interval !== currentIntervalType)) {
+                    quantidadeTotal += comidaEncontrada.quantidade || 0;
+                }
+            });
+        });
+
+        // Calcula quanto ainda pode ser selecionado
+        return comidaOrcamento.quantidade - quantidadeTotal;
+
+
+    }
+
+    const handleQuantityChange = (comida_id: number, quantity: number, currentDate: string, currentIntervalType: string) => {
+        // Encontra a comida no orçamento para pegar a quantidade máxima disponível
+        const comidaOrcamento = orcamento.comidas.find(c => c.comida_id === comida_id);
+        if (!comidaOrcamento) return;
+
+        const quantidadeDisponivel = calculateQuantityOfFood(comida_id, currentDate, currentIntervalType);
+        const novaQuantidade = Math.min(Math.max(0, quantity), quantidadeDisponivel);
+
+        // Atualiza a quantidade da comida selecionada
+        setSelectedFoods(prev => {
+            const updatedFoods = {...prev};
+            const comida = updatedFoods[currentDate][currentIntervalType].comidas.find(
+                c => c.comida_id === comida_id
+            );
+
+            if (comida) {
+                comida.quantidade = novaQuantidade;
+            }
+
+            return updatedFoods;
+        });
+    };
     const handleSubmit = () => {
         onSubmit({
             orcamento,
@@ -121,7 +166,7 @@ export const ConfigOrcamentoWordModal: React.FC<ConfigOrcamentoWordModalProps> =
                 <div className="text-center mb-4">
                     <h4>Configurar Cardápio - Dia {currentStep + 1}</h4>
                     <ProgressBar
-                        now={((currentStep + 1) * 100) / (eventDates.length )}
+                        now={((currentStep + 1) * 100) / (eventDates.length)}
                         label={`${currentStep + 1}/${eventDates.length}`}
                     />
                     <p className="mt-2">{formatDate(currentDate)}</p>
@@ -151,38 +196,76 @@ export const ConfigOrcamentoWordModal: React.FC<ConfigOrcamentoWordModalProps> =
                             }}
                         >
                             <div className="row">
-                                {orcamento.comidas.map((cardapio) => (
-                                    <Col key={cardapio.comida_id} md={4} className="mb-2">
-                                        <Form.Check
-                                            type="checkbox"
-                                            id={`food-${currentStep}-${currentIntervalType}-${cardapio.comida_id}`}
-                                            label={cardapio.comida}
-                                            checked={selectedFoods[currentDate][currentIntervalType].comidas.some(
-                                                (c) => c.comida_id === cardapio.comida_id
+                                {orcamento.comidas.map((cardapio) => {
+                                    const quantityOfFoodLeft = calculateQuantityOfFood(cardapio.comida_id, currentDate, currentIntervalType);
+                                    const isSelected = quantityOfFoodLeft > 0 ? selectedFoods[currentDate][currentIntervalType].comidas.some(
+                                        (c) => c.comida_id === cardapio.comida_id
+                                    ) : false;
+
+                                    return (
+                                        <Col key={cardapio.comida_id} md={4} className="mb-2 d-flex align-items-center">
+                                            <Form.Check
+                                                type="checkbox"
+                                                id={`food-${currentStep}-${currentIntervalType}-${cardapio.comida_id}`}
+                                                label={`${cardapio.comida} (${quantityOfFoodLeft} disponíveis)`}
+                                                checked={isSelected}
+                                                disabled={quantityOfFoodLeft === 0 && !isSelected}
+                                                onChange={(e) => {
+                                                    if (quantityOfFoodLeft === 0 && e.target.checked) {
+                                                        setShowToast(true);
+                                                        return;
+                                                    }
+                                                    updateSelectedFoods(
+                                                        currentDate,
+                                                        currentIntervalType,
+                                                        {
+                                                            comida_id: cardapio.comida_id,
+                                                            comida: cardapio.comida,
+                                                            valor: cardapio.valor,
+                                                            quantidade: 0,
+                                                        },
+                                                        e.target.checked
+                                                    );
+                                                }}
+                                            />
+                                            {isSelected && (
+                                                <Form.Control
+                                                    type="number"
+                                                    min={0}
+                                                    max={quantityOfFoodLeft}
+                                                    value={selectedFoods[currentDate][currentIntervalType].comidas.find(
+                                                        c => c.comida_id === cardapio.comida_id
+                                                    )?.quantidade || 0}
+                                                    onChange={(e) =>
+                                                        handleQuantityChange(cardapio.comida_id, parseInt(e.target.value), currentDate, currentIntervalType)
+                                                    }
+                                                    style={{width: '100px', marginLeft: '5px'}}
+                                                />
                                             )}
-                                            onChange={(e) =>
-                                                updateSelectedFoods(
-                                                    currentDate,
-                                                    currentIntervalType,
-                                                    {
-                                                        comida_id: cardapio.comida_id,
-                                                        nome: cardapio.comida,
-                                                        descricao: '',
-                                                        valor: cardapio.valor,
-                                                        quantidade_minima: 1,
-                                                        fator_multiplicador: 1,
-                                                        tipo: '',
-                                                        subtipo: '',
-                                                    },
-                                                    e.target.checked
-                                                )
-                                            }
-                                        />
-                                    </Col>
-                                ))}
+                                        </Col>
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>
+
+                    <Toast
+                        show={showToast}
+                        onClose={() => setShowToast(false)}
+                        style={{
+                            position: 'fixed',
+                            top: 20,
+                            right: 20,
+                            zIndex: 9999
+                        }}
+                        delay={3000}
+                        autohide
+                    >
+                        <Toast.Header>
+                            <strong className="me-auto">Aviso</strong>
+                        </Toast.Header>
+                        <Toast.Body>Quantidade máxima atingida para este item</Toast.Body>
+                    </Toast>
 
                     <Button
                         variant="outline-secondary"
@@ -195,7 +278,6 @@ export const ConfigOrcamentoWordModal: React.FC<ConfigOrcamentoWordModalProps> =
             </Modal.Body>
         );
     };
-
     const renderFooter = () => (
         <Modal.Footer>
             <div className="d-flex justify-content-between w-100">
